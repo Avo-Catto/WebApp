@@ -1,4 +1,4 @@
-# run app: flask --app main.py run
+# run app: flask --app example.py run
 
 from flask import Flask
 
