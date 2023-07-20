@@ -5,63 +5,66 @@ from src.logger import Logger
 from sqlite3 import connect
 from os.path import exists
 
-log = Logger('SQLog', file=__file__)
-
-
-def create_db(db_path:str) -> None:
-    """Create new db file."""
-    if not exists(db_path):
-        try: 
-            with open(db_path, 'w') as f: 
-                f.close()
-            log.info(f'database created successfully: {db_path}')
-        except Exception as e:
-            log.critical(f'creating db: {db_path} failed')
-            log.error(e.__str__())
-    else:
-        log.warning(f'database already exists there: {db_path}')
+log = Logger('SQLog')
+log.remove_loglist('info')
 
 
 class DB:
     def __init__(self, path:str) -> None:
         self.path = path
-        try:
-            log.info(f'connecting to DB: {path}') 
+
+        if self._create_db(path, True):
             self.conn = connect(path)
             self.curser = self.conn.cursor()
-            log.info(f'connection to DB: {path} established')
-        except Exception as e:
-            log.critical(f'connecting to DB: {path} failed')
-            log.error(e.__str__())
+            log.info(f'connected to db: {path}')
+        else: 
+            log.critical('no db given')
+
+    def _create_db(self, db_path:str, ask:bool = False, question:str|None = None) -> bool:
+        """Create new db file if not already there and return True if a db exists to connect to."""
+        if not exists(db_path):
+            if ask:
+                if question is None: question = f'The requested DB doesn\' exist, do you want to create a new one? [y/n]'
+                inp = input(question).lower()
+
+                if inp == 'y':
+                    with open(db_path, 'w') as f: 
+                        f.close()
+                    log.info(f'created new db: {db_path}')
+                    return True
+                else: 
+                    return False
+        else: 
+            return True
     
-    def execute(self, sql:str, params:tuple=()) -> bool:
-        """Execute sql code and return True if succeed."""
+    def _execute(self, sql:str, params:tuple=()) -> None:
+        """Execute sql code."""
         try: 
-            log.debug(f'execute on db:\n{sql}')
+            log.debug(f'execute on db: {self.path}:\n{sql}')
             self.curser.execute(sql, params)
             self.conn.commit()
-            log.info(f'execution succeed on db: {self.path}')
-            return True
         except Exception as e:
-            log.warning(f'an error occured while executing sql')
-            log.error(e.__str__())
-            return False
+            log.error(f'error while executing sql on db: {self.path}: {e.__str__()}')
+            raise e
     
     def close(self) -> None:
         """Close connection to DB."""
         try:
             self.conn.close()
-            log.info(f'connection to DB: {self.path} closed successful')
+            log.info(f'connection to db: {self.path} closed')
         except Exception as e:
-            log.warning(f'an error occured while closing the connection to the DB: {self.path}')
-            log.error(e.__str__())
+            log.error(f'error while closing connection to db: {self.path}: {e.__str__()}')
+            raise e
     
     def insert(self, table:str, data:dict) -> bool:
         """Insert data into table."""
-        q = ', '.join(f"{'? '*len(data)}".split())
-        code = f"INSERT INTO {table} ({', '.join([key for key in data])}) VALUES ({q});"
-        log.debug(f'Insert command would be executed:\n{code}')
-        log.debug(f'Parameters: {tuple(val for key, val in data.items())}')
-        self.execute(sql=code, params=tuple(val for key, val in data.items()))
+        try:
+            log.debug(f'insert data into db: {self.path}: table: {table}')
+            q = ', '.join(f"{'? '*len(data)}".split())
+            code = f"INSERT INTO {table} ({', '.join([key for key in data])}) VALUES ({q});"
+            self._execute(sql=code, params=tuple(val for _, val in data.items()))
+        except Exception as e:
+            log.error(f'error while inserting data into table: {table} in db: {self.path}: {e.__str__()}')
+            raise e
 
-# TODO: work on DB class (+add interactive feature) 
+# TODO: create_table function

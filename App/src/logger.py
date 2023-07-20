@@ -1,5 +1,6 @@
 from datetime import datetime
 from src.exception import TypeNameLogError
+from inspect import stack
 
 class Colors:
     """ANSI color codes"""
@@ -34,11 +35,12 @@ colors = Colors()
 
 
 class Logger:
-    def __init__(self, name:str, file:str, loglist:list = ['info', 'debug', 'warning', 'error', 'critical']) -> None:
+    def __init__(self, name:str) -> None:
         """Initialize logger and only log messages in loglist."""
         self.name = name
-        self.file = file
-        self.loglist = loglist
+        self.file = stack()[1].filename
+        self._loglist = ['info', 'debug', 'warning', 'error', 'critical']
+        self._active = True
     
     def _build_message(self, msg:str, typename:str) -> str:
         """Build log string."""
@@ -47,18 +49,12 @@ class Logger:
     def _color(self, logmsg:str, typename:str) -> str:
         """Color log message."""
         match typename.lower():
-            case 'info': 
-                return f'{colors.GREEN}{logmsg}{colors.RESET}'
-            case 'debug':
-                return f'{colors.BLUE}{logmsg}{colors.RESET}'
-            case 'warning':
-                return f'{colors.YELLOW}{logmsg}{colors.RESET}'
-            case 'error':
-                return f'{colors.RED_BOLD}{logmsg}{colors.RESET}'
-            case 'critical': 
-                return f'{colors.RED}{logmsg}{colors.RESET}'
-            case _:
-                raise TypeNameLogError(typename)
+            case 'info':        return f'{colors.GREEN}{logmsg}{colors.RESET}'
+            case 'debug':       return f'{colors.BLUE}{logmsg}{colors.RESET}'
+            case 'warning':     return f'{colors.YELLOW}{logmsg}{colors.RESET}'
+            case 'error':       return f'{colors.RED_BOLD}{logmsg}{colors.RESET}'
+            case 'critical':    return f'{colors.RED}{logmsg}{colors.RESET}'
+            case _:             raise TypeNameLogError(typename)
 
     def log(self, msg:str, typename:str = 'info') -> None:
         """
@@ -67,8 +63,30 @@ class Logger:
         """
         msg = self._build_message(msg, typename)
         msg = self._color(msg, typename)
-        if typename in self.loglist:
+        if typename in self._loglist and self._active:
             print(msg)
+    
+    def remove_loglist(self, *args:str) -> None:
+        """
+        Remove items from loglist.
+        available: info/debug/warning/error/critical
+        """
+        for i in args: self._loglist.remove(i)
+    
+    def add_loglist(self, *args:str) -> None:
+        """
+        Add items to loglist.
+        available: info/debug/warning/error/critical
+        """
+        for i in args: self._loglist.append(i)
+    
+    def activate(self) -> None:
+        """Activate logging."""
+        self._active = True
+    
+    def deactivate(self) -> None:
+        """Deactivate logging."""
+        self._active = False
     
     # easier to use functions
     def info(self, msg:str) -> None: self.log(msg, 'info')

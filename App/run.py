@@ -1,12 +1,14 @@
 # to run the app you have to be in the "App" directory
 # TODO: add argparser to split initial steps from run steps
 from src.backend import app
-from src.sql import create_db, DB
+from src.sql import DB
+from src.logger import Logger
 
 DB_PATH = 'db/user.db'
 create_user_table = """
 CREATE TABLE IF NOT EXISTS credentials (
     id integer PRIMARY KEY,
+    unique_id text NOT NULL unique,
     firstname text NOT NULL,
     lastname text NOT NULL,
     email text NOT NULL unique,
@@ -15,17 +17,17 @@ CREATE TABLE IF NOT EXISTS credentials (
     date date NOT NULL
 ); """
 
+if __name__ == '__main__':
 
-if __name__ == '__main__': # works perfect
+    log = Logger('RunLog')
 
-    # initial steps
-    create_db(DB_PATH)
+    log.info(f'connect to db: {DB_PATH}')
     db = DB(DB_PATH)
-    db.execute(create_user_table)
+    log.info(f'create table in db: {DB_PATH}')
+    db._execute(create_user_table)
+    log.info(f'close connection to db: {DB_PATH}')
     db.close()
     del db
 
-    # run step
+    log.info('starting flask')
     app.run('127.0.0.1', 80, debug=True)
-
-# TODO: the log messages are messed up, because I implemented them in the sql module: FIX IT!!!

@@ -1,13 +1,15 @@
-# TODO: SQLite can't handle special characters, I have to encode them...
+# TODO: catch exceptions
 from flask import Flask, render_template, request
 from flask_bcrypt import Bcrypt
 from src.logger import Logger
-from src.sql import DB, create_db
+from src.sql import DB
+from hashlib import sha256
+from uuid import uuid4
 
 # initzialize required stuff
 DB_PATH = 'db/user.db'
 
-log = Logger('FlaskLog', __file__)
+log = Logger('FlaskLog')
 
 app = Flask(
     import_name=__name__,
@@ -31,14 +33,15 @@ def signup() -> str:
         return render_template('signup.html')
     
     elif request.method == 'POST':
-        log.info('someone signs up')
-
+        password = bcrypt.generate_password_hash(request.form.get('password')).decode()
+        username = request.form.get('username')
         creds = {
+            'unique_id': sha256(f'{password}{username}{uuid4()}'.encode()).hexdigest(),
             'firstname': request.form.get('realname').split()[0],
             'lastname': request.form.get('realname').split()[1],
             'email': request.form.get('email'),
-            'username': request.form.get('username'),
-            'password': bcrypt.generate_password_hash(request.form.get('password')).decode(),
+            'username': username,
+            'password': password,
             'date': request.form.get('date')
         }
 
