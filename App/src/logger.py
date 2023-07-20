@@ -42,7 +42,7 @@ class Logger:
     
     def _build_message(self, msg:str, typename:str) -> str:
         """Build log string."""
-        return f'[{datetime.now().strftime("%d.%m.%Y|%H:%M:%S")}]-[{typename.upper()}]-[{self.file}]: {msg}'
+        return f'[{datetime.now().strftime("%d.%m.%Y|%H:%M:%S")}]-[{typename.upper()}]-[{self.name}]-[{self.file}]: {msg}'
 
     def _color(self, logmsg:str, typename:str) -> str:
         """Color log message."""
@@ -75,13 +75,5 @@ class Logger:
     def debug(self, msg:str) -> None: self.log(msg, 'debug')
     def warning(self, msg:str) -> None: self.log(msg, 'warning')
     def error(self, msg:str) -> None: self.log(msg, 'error')
-    def crucial(self, msg:str) -> None: self.log(msg, 'crucial')
-
-
-if __name__ == '__main__':
-    log = Logger('SQLog')
-    log.log('"a" is not defined', 'info')
-    log.log('"a" is not defined', 'debug')
-    log.log('"a" is not defined', 'warning')
-    log.log('"a" is not defined', 'error')
-    log.log('"a" is not defined', 'critical')
+    def critical(self, msg:str) -> None: self.log(msg, 'critical')
+    
