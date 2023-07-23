@@ -4,10 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Index Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@600&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
-<body>
-    <center>
-        <p>Put all the stuff here</p>
-    </center>
+<body class="general-body">
+    <div>
+        <ul class="bar">
+            <h1 class="general-heading">TechCat-Blog</h1>
+            <button>Explore</button>
+            <button>Login</button>
+            <button>Signup</button>
+        </ul>
+    </div>
 </body>
 </html>

@@ -44,9 +44,9 @@ def signup() -> str:
             'password': password,
             'date': request.form.get('date')
         }
-
         db = DB(DB_PATH)
         db.insert('credentials', creds)
+        db.commit()
         db.close()
 
         return render_template('login.html')
@@ -59,17 +59,31 @@ def login() -> str:
         return render_template('login.html')
     
     elif request.method == 'POST':
-        password = request.form.get('password', type=str)
         email = request.form.get('email', type=str)
-        log.debug(f'Password: {password}')
+        password = request.form.get('password', type=str)
 
-        password_hash = bcrypt.generate_password_hash(password).decode()
-        log.debug(f'Password-Hash: {password_hash}')
-
-        # login step
-
-        return render_template('login.html')
+        db = DB(DB_PATH)
+        password_hash = db.select('credentials', 'password', f'"{email}" = email')
+        log.debug(f'password hash: {password_hash[0]}')
+        if len(password_hash) == 1:
+            if bcrypt.check_password_hash(password_hash[0], password):
+                user_data = db.select('credentials', '*', f'"{email}" = email')
+                log.debug(f'successful login: retrieved data from db: {DB_PATH}: {user_data}')
+                db.close()
+                return render_template('profile.html')
+            else:
+                log.debug(f'login failed: wrong password for email: {email}')
+                db.close()
+                return render_template('login.html')
+        else:
+            log.debug(f'login failed: email doesn\' match: {email}')
+            db.close()
+            return render_template('signup.html')
     
     else:
         return('<p>Invalid Method!<br>I need an error template...</p>')
-    
+
+
+# TODO: Session Cookie after login
+# TODO: Messages in template, for example: "You don't have any Account" or "Login failed"
+# TODO: Error template

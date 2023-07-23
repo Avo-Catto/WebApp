@@ -25,6 +25,7 @@ if __name__ == '__main__':
     db = DB(DB_PATH)
     log.info(f'create table in db: {DB_PATH}')
     db._execute(create_user_table)
+    db.commit()
     log.info(f'close connection to db: {DB_PATH}')
     db.close()
     del db

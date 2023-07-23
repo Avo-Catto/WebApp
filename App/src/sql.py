@@ -37,12 +37,14 @@ class DB:
         else: 
             return True
     
-    def _execute(self, sql:str, params:tuple=()) -> None:
+    def _execute(self, sql:str, params:tuple=()) -> tuple|None:
         """Execute sql code."""
         try: 
             log.debug(f'execute on db: {self.path}:\n{sql}')
-            self.curser.execute(sql, params)
-            self.conn.commit()
+            out = tuple(self.curser.execute(sql, params))
+            if len(out) > 0: return out[0]
+            else: return None
+            
         except Exception as e:
             log.error(f'error while executing sql on db: {self.path}: {e.__str__()}')
             raise e
@@ -56,15 +58,29 @@ class DB:
             log.error(f'error while closing connection to db: {self.path}: {e.__str__()}')
             raise e
     
-    def insert(self, table:str, data:dict) -> bool:
+    def commit(self) -> None:
+        """Commit executed code to db."""
+        self.conn.commit()
+    
+    def insert(self, table:str, data:dict) -> None:
         """Insert data into table."""
         try:
             log.debug(f'insert data into db: {self.path}: table: {table}')
             q = ', '.join(f"{'? '*len(data)}".split())
             code = f"INSERT INTO {table} ({', '.join([key for key in data])}) VALUES ({q});"
-            self._execute(sql=code, params=tuple(val for _, val in data.items()))
+            self._execute(code, tuple(val for _, val in data.items()))
         except Exception as e:
             log.error(f'error while inserting data into table: {table} in db: {self.path}: {e.__str__()}')
+            raise e
+    
+    def select(self, table:str, columns:str|tuple|list, where:str) -> tuple|None:
+        """Retrieve data from db."""
+        try:
+            log.debug(f'get {columns} from db: {self.path}: table: {table}')
+            code = f'SELECT {", ".join(columns) if type(columns) != str else columns} FROM {table} WHERE {where}'
+            return self._execute(code)
+        except Exception as e:
+            log.error(f'error while retrieving data from table: {table} from db: {self.path}: {e.__str__()}')
             raise e
 
 # TODO: create_table function
