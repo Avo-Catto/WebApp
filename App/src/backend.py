@@ -1,5 +1,5 @@
 # TODO: catch exceptions
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 from flask_bcrypt import Bcrypt
 from src.logger import Logger
 from src.sql import DB
@@ -8,6 +8,7 @@ from uuid import uuid4
 
 # initzialize required stuff
 DB_PATH = 'db/user.db'
+COOKIE_LIFETIME = 60*60*24 # seconds (lives for 24 hours)
 
 log = Logger('FlaskLog')
 
@@ -36,7 +37,7 @@ def signup() -> str:
         password = bcrypt.generate_password_hash(request.form.get('password')).decode()
         username = request.form.get('username')
         creds = {
-            'unique_id': sha256(f'{password}{username}{uuid4()}'.encode()).hexdigest(),
+            'unique_id': sha256(f'{password}{username}{uuid4().hex}'.encode()).hexdigest(),
             'firstname': request.form.get('realname').split()[0],
             'lastname': request.form.get('realname').split()[1],
             'email': request.form.get('email'),
@@ -70,7 +71,11 @@ def login() -> str:
                 user_data = db.select('credentials', '*', f'"{email}" = email')
                 log.debug(f'successful login: retrieved data from db: {DB_PATH}: {user_data}')
                 db.close()
-                return render_template('profile.html')
+                # generate and set session cookie
+                session = uuid4().hex
+                response = make_response(render_template('profile.html'))
+                response.set_cookie(key='session', value=session, max_age=COOKIE_LIFETIME, secure=True, httponly=False, samesite='Strict')
+                return response
             else:
                 log.debug(f'login failed: wrong password for email: {email}')
                 db.close()
@@ -84,6 +89,6 @@ def login() -> str:
         return('<p>Invalid Method!<br>I need an error template...</p>')
 
 
-# TODO: Session Cookie after login
+# TODO: add session cookie functionality?
 # TODO: Messages in template, for example: "You don't have any Account" or "Login failed"
 # TODO: Error template

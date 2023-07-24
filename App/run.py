@@ -1,5 +1,4 @@
 # to run the app you have to be in the "App" directory
-# TODO: add argparser to split initial steps from run steps
 from src.backend import app
 from src.sql import DB
 from src.logger import Logger
@@ -32,3 +31,5 @@ if __name__ == '__main__':
 
     log.info('starting flask')
     app.run('127.0.0.1', 80, debug=True)
+
+# TODO: add argparser to split initial steps from run steps
