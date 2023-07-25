@@ -5,10 +5,14 @@ from src.logger import Logger
 from src.sql import DB
 from hashlib import sha256
 from uuid import uuid4
+from json import load
 
 # initzialize required stuff
-DB_PATH = 'db/user.db'
-COOKIE_LIFETIME = 60*60*24 # seconds (lives for 24 hours)
+with open('./config.json', 'r') as f:
+    CONFIG:dict = load(f)
+
+DB_PATH = CONFIG.get('backend-db')
+COOKIE_LIFETIME = 60*60*24 # seconds
 
 log = Logger('FlaskLog')
 
@@ -47,7 +51,6 @@ def signup() -> str:
         }
         db = DB(DB_PATH)
         db.insert('credentials', creds)
-        db.commit()
         db.close()
 
         return render_template('login.html')
@@ -92,3 +95,4 @@ def login() -> str:
 # TODO: add session cookie functionality?
 # TODO: Messages in template, for example: "You don't have any Account" or "Login failed"
 # TODO: Error template
+# TODO: I see a lot of not catched exceptions, HELP!!!
