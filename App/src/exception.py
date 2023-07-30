@@ -1,3 +1,4 @@
+from sqlite3 import IntegrityError
 
 class TypeNameLogError(Exception):
     def __init__(self, typename:str) -> None:

@@ -11,13 +11,14 @@
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body class="general-body">
-    <div>
-        <ul class="bar">
-            <h1 class="general-heading">TechCat-Blog</h1>
-            <button>Explore</button>
-            <button>Login</button>
-            <button>Signup</button>
-        </ul>
+    <div class="bar">
+        <h1 class="general-heading" style="display: inline;">TechCat-Blog</h1>
+        <div class="bar-buttons-container">
+            <button class="bar-button" onclick="redirect('/explore')">Explore</button>
+            <button class="bar-button" onclick="redirect('/login')">Login</button>
+            <button class="bar-button" onclick="redirect('/signup')">Signup</button>
+        </div>
     </div>
+    <hr class="side-break">
 </body>
 </html>

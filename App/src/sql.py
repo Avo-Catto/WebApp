@@ -3,11 +3,16 @@
 
 from sqlite3 import connect
 from os.path import exists
+from time import sleep
+from datetime import datetime
 from src.logger import Logger
 from src.exception import TableExistError, NoDBError
 
 log = Logger('SQLog')
 log.remove_loglist('info')
+
+with open('./config.json', 'r') as f:
+    CONFIG:dict = __import__('json').load(f)
 
 
 class DB:
@@ -42,7 +47,7 @@ class DB:
     def _execute(self, sql:str, params:tuple=()) -> tuple|None:
         """Execute sql code."""
         try: 
-            log.debug(f'execute on db: {self.path}:\n{sql}')
+            log.debug(f'execute on db: {self.path}: {sql}')
             out = tuple(self.curser.execute(sql, params))
             if len(out) > 0: return out[0]
             else: return None
@@ -57,7 +62,7 @@ class DB:
         example: columns=["id integer PRIMARY KEY", ...]
         """
         try:
-            if name not in tuple(self._list_tables()): # FIXME: TypeError: 'NoneType' object is not iterable
+            if name not in tuple(self._list_tables()):
                 code = f'CREATE TABLE IF NOT EXISTS {name} ({", ".join(columns)});'
                 self._execute(code)
                 self._commit()
@@ -71,7 +76,8 @@ class DB:
 
     def _list_tables(self) -> tuple:
         """Returns a generator object of tables from db."""
-        return self._execute('SELECT name FROM sqlite_master WHERE type="table";')
+        ex = self._execute('SELECT name FROM sqlite_master WHERE type="table";')
+        return ex if ex is not None else ('')
 
     def _commit(self) -> None:
         """Commit executed code to db."""
@@ -99,14 +105,36 @@ class DB:
             log.error(f'error while inserting data into table: {table} in db: {self.path}: {e.__str__()}')
             raise e
     
-    def select(self, table:str, columns:str|tuple|list, where:str) -> tuple|None:
+    def select(self, table:str, columns:str|tuple|list, where:str, params:tuple=()) -> tuple|None:
         """Retrieve data from db."""
         try:
             log.debug(f'get {columns} from db: {self.path}: table: {table}')
             code = f'SELECT {", ".join(columns) if type(columns) != str else columns} FROM {table} WHERE {where};'
-            return self._execute(code)
+            return self._execute(code, params)
         except Exception as e:
             log.error(f'error while retrieving data from table: {table} from db: {self.path}: {e.__str__()}')
             raise e
+    
+    def delete(self, table:str, where:str, params:tuple=()) -> None:
+        """Delete row in table where $where matches."""
+        try:
+            log.debug(f'delete row in table: {table} where: {where}')
+            self._execute(f'DELETE FROM {table} WHERE {where};', params)
+            self._commit()
+        except Exception as e:
+            log.error(f'error while deleting row in table: {table} in db: {self.path}: {e.__str__()}')
+            raise e
+
+
+# specific adjusted functions
+def session_cleanup(sleep_time: int) -> None: # FIXME: function doesn't work!!!
+    """Clean session table by expired cookies."""
+    while True:
+        sleep(sleep_time)
+        db = DB(CONFIG.get('db')['path'])
+        expired = db.select(CONFIG.get('db')['tables']['session'], 'session_id', 'expiration <= ?', (datetime.now(),)) # get session_id's of expired sessions
+        log.debug(f'--->>> {expired}')
+        db.close()
+        log.debug('cleared expired sessions')
 
 # TODO: add interactive mode
