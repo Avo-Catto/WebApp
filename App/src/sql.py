@@ -6,13 +6,16 @@ from os.path import exists
 from time import sleep
 from datetime import datetime
 from src.logger import Logger
-from src.exception import TableExistError, NoDBError
+from src.exception import TableExistError, NoDBError, JSONDecodeError
 
 log = Logger('SQLog')
-log.remove_loglist('info')
+# log.remove_loglist('info')
 
-with open('./config.json', 'r') as f:
-    CONFIG:dict = __import__('json').load(f)
+try:
+    with open('./config.json', 'r') as f:
+        CONFIG:dict = __import__('json').load(f)
+except JSONDecodeError:
+    log.critical('config file couldn\'t be loaded: some functions will raise errors')
 
 
 class DB:
@@ -49,7 +52,7 @@ class DB:
         try: 
             log.debug(f'execute on db: {self.path}: {sql}')
             out = tuple(self.curser.execute(sql, params))
-            if len(out) > 0: return out[0]
+            if len(out) > 0: return out
             else: return None
             
         except Exception as e:
@@ -105,21 +108,27 @@ class DB:
             log.error(f'error while inserting data into table: {table} in db: {self.path}: {e.__str__()}')
             raise e
     
-    def select(self, table:str, columns:str|tuple|list, where:str, params:tuple=()) -> tuple|None:
-        """Retrieve data from db."""
+    def select(self, table:str, columns:str|tuple|list, where:str='', params:tuple=()) -> tuple|None:
+        """
+        Retrieve data from db.
+        example: where='WHERE username = ...'
+        """
         try:
             log.debug(f'get {columns} from db: {self.path}: table: {table}')
-            code = f'SELECT {", ".join(columns) if type(columns) != str else columns} FROM {table} WHERE {where};'
+            code = f'SELECT {", ".join(columns) if type(columns) != str else columns} FROM {table} {where};'
             return self._execute(code, params)
         except Exception as e:
             log.error(f'error while retrieving data from table: {table} from db: {self.path}: {e.__str__()}')
             raise e
     
     def delete(self, table:str, where:str, params:tuple=()) -> None:
-        """Delete row in table where $where matches."""
+        """
+        Delete row in table where $where matches.
+        example: where='WHERE username = ...'
+        """
         try:
             log.debug(f'delete row in table: {table} where: {where}')
-            self._execute(f'DELETE FROM {table} WHERE {where};', params)
+            self._execute(f'DELETE FROM {table} {where};', params)
             self._commit()
         except Exception as e:
             log.error(f'error while deleting row in table: {table} in db: {self.path}: {e.__str__()}')
@@ -130,10 +139,12 @@ class DB:
 def session_cleanup(sleep_time: int) -> None: # FIXME: function doesn't work!!!
     """Clean session table by expired cookies."""
     while True:
-        sleep(sleep_time)
+        try: sleep(sleep_time)
+        except Exception as e: 
+            log.warning(f'session cleanup process stopped due exception: {e}')
+            break
         db = DB(CONFIG.get('db')['path'])
-        expired = db.select(CONFIG.get('db')['tables']['session'], 'session_id', 'expiration <= ?', (datetime.now(),)) # get session_id's of expired sessions
-        log.debug(f'--->>> {expired}')
+        db.delete(CONFIG.get('db')['tables']['session'], f'WHERE expiration < ?', (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), )) # delete expired sessions
         db.close()
         log.debug('cleared expired sessions')
 

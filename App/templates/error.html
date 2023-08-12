@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error 404</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@600&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</head>
+<body class="general-body">
+    <div class="general-form center">
+        <h1 class="general-heading">Error - {{ error }}</h1>
+        <center>
+            <p class="general-text">{{ message }}</p>
+            <button class="general-redirect-button" onclick="redirect('{{ back }}')">back</button>
+        </center>
+    </div>
+</body>
+</html>

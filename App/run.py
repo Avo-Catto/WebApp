@@ -4,7 +4,7 @@ from json import dump, load, JSONDecodeError
 from src.logger import Logger
 from os.path import exists
 from os import remove
-from threading import Thread
+from multiprocessing import Process
 
 log = Logger('RunLog')
 
@@ -42,12 +42,14 @@ if __name__ == '__main__':
 
             SESSION_CLEANUP_INTERVALL = CONFIG.get('vars')['session_cleanup'] # 60 seconds (can be incresed after checking if it works)
 
-            log.info('starting session cleanup thread')
-            session_clean_thread = Thread(target=session_cleanup, args=(SESSION_CLEANUP_INTERVALL, )).start()
+            log.info('starting session cleanup proc')
+            session_clean_proc = Process(target=session_cleanup, args=(SESSION_CLEANUP_INTERVALL, ))
+            session_clean_proc.start()
 
             log.info('starting flask')
             app.run('127.0.0.1', 80, debug=args['no_debug'])
         except Exception as e:
+            session_clean_proc.terminate()
             log.error(f'the application couldn\'t be started because of error: {e.__str__()}')
             log.info('this error occured probably, because the application wasn\'t set up properly, please run: python3 run.py --setup')
     
@@ -88,11 +90,10 @@ if __name__ == '__main__':
                 'id integer PRIMARY KEY',
                 'unique_id text NOT NULL unique',
                 'firstname text NOT NULL',
-                'lastname text NOT NULL',
+                'lastname text',
                 'email text NOT NULL unique',
                 'username text NOT NULL',
                 'password text NOT NULL',
-                'date date NOT NULL'
             )
         )
         db._create_table(
@@ -116,4 +117,4 @@ if __name__ == '__main__':
 # TODO: add interactive mode for db
 # TODO: add more configurability to db (specify custom table name for credentials)
 # TODO: setup mode, catch exceptions when updating configs + validate if tables have same name
-# TODO: make app stoppable -_- (it's because of the while loop in the thread...)
+# TODO: make app stoppable -_- (it's because of the while loop in the proc...)
