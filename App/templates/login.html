@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +13,16 @@
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body class="general-body">
+    <div class="bar">
+        <h1 class="general-heading" style="display: inline;">TechCat-Blog</h1>
+        <div class="bar-buttons-container">
+            <button class="bar-button" onclick="redirect('/explore')">Explore</button>
+            <button class="bar-button" onclick="redirect('/login')">Login</button>
+            <button class="bar-button" onclick="redirect('/signup')">Signup</button>
+            <button class="bar-button" onclick="redirect('/profile')">Profile</button>
+        </div>
+    </div>
+    <hr class="side-break">
     <div class="center general-form">
         <center>
             <h3 class="general-heading">Login</h3>
@@ -20,7 +31,6 @@
                 <input class="general-input" type="password" placeholder="Password" name="password" id="2" required> <br><br>
                 <center>
                     <input class="general-input" style="margin-right: 5px;" type="submit" value="Login">
-                    <button class="general-input-redirect-button" style="margin-left: 5px;" onclick="redirect('/signup')">Signup</button> <br>
                     <p></p>
                 </center>
             </form>

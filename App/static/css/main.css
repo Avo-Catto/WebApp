@@ -162,9 +162,35 @@
     color: #131313;
     cursor: pointer;
     text-align: center;
+    border-radius: 7px;
+}
+
+.bar-button:hover {
+    background-color: #43A86A;
+    border-color: #43A86A;
+    box-shadow: 0px 0px 10px #43A86A;
+    color: black;
+}
+
+.bar-button:active {
+    background-color: #408D5E;
+    border-color: #408D5E;
+    box-shadow: 0px 0px 10px #408D5E;
+    color: black;
 }
 
 .side-break {
     color: #43A86A;
     box-shadow: 0px 0px 10px #43A86A;
+}
+
+.row {
+    white-space: nowrap;
+    display: flex;
+}
+
+.profile-img {
+    width: 18vw;
+    height: fit-content;
+    border-radius: 50%;
 }

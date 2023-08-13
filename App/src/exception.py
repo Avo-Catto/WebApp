@@ -12,3 +12,7 @@ class TableExistError(Exception):
 class NoDBError(Exception):
     def __init__(self) -> None:
         super().__init__('no db were selected')
+
+class NoSessionError(Exception):
+    def __init__(self) -> None:
+        super().__init__('session id not valid')

@@ -38,7 +38,7 @@ if __name__ == '__main__':
     if args.get('run'):
         try:
             from src.backend import app
-            from src.sql import DB, session_cleanup
+            from src.session import session_cleanup
 
             SESSION_CLEANUP_INTERVALL = CONFIG.get('vars')['session_cleanup'] # 60 seconds (can be incresed after checking if it works)
 
@@ -114,7 +114,9 @@ if __name__ == '__main__':
 
 # TODO: think about how to handle main args and options (subparser?)
 # TODO: customizable port and host?
-# TODO: add interactive mode for db
-# TODO: add more configurability to db (specify custom table name for credentials)
 # TODO: setup mode, catch exceptions when updating configs + validate if tables have same name
 # TODO: make app stoppable -_- (it's because of the while loop in the proc...)
+# TODO: fix auto submit credentials if you try to change site (signup & login sites)
+# TODO: 1. make profile viewable of data, 2. make blog posts in md, 3. make profile stuff customizable and posts too
+# TODO: make heading "TechCat-Blog" to a button and redirect to root
+# TODO: auf Freepic verweisen bei Profilbild <a href="https://www.flaticon.com/de/kostenlose-icons/katze" title="katze Icons">Katze Icons erstellt von Freepik - Flaticon</a>

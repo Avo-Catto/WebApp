@@ -3,8 +3,6 @@
 
 from sqlite3 import connect
 from os.path import exists
-from time import sleep
-from datetime import datetime
 from src.logger import Logger
 from src.exception import TableExistError, NoDBError, JSONDecodeError
 
@@ -134,18 +132,5 @@ class DB:
             log.error(f'error while deleting row in table: {table} in db: {self.path}: {e.__str__()}')
             raise e
 
-
-# specific adjusted functions
-def session_cleanup(sleep_time: int) -> None: # FIXME: function doesn't work!!!
-    """Clean session table by expired cookies."""
-    while True:
-        try: sleep(sleep_time)
-        except Exception as e: 
-            log.warning(f'session cleanup process stopped due exception: {e}')
-            break
-        db = DB(CONFIG.get('db')['path'])
-        db.delete(CONFIG.get('db')['tables']['session'], f'WHERE expiration < ?', (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), )) # delete expired sessions
-        db.close()
-        log.debug('cleared expired sessions')
 
 # TODO: add interactive mode
