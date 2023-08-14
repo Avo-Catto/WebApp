@@ -103,15 +103,17 @@ def login() -> str:
 def profile() -> str:
     """Profile page."""
     if request.method == 'GET':
-        try: unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
+        try: 
+            unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
+
         except NoSessionError: 
-            unique_id = 'default'
+            unique_id = 'anonymous'
         finally: 
             # check if profile image was uploaded and handle it
-            if exists(f'db/profile-img/{unique_id}.png'): profile_img = f'{unique_id}.png'
-            else: profile_img = 'default.png'
+            if exists(f'/static/img/profile/{unique_id}.png'): 
+                profile_img = f'{unique_id}.png'
+            else: profile_img = 'anonymous.png'
 
-            print(profile_img)
             return render_template('profile.html', profile_img=profile_img)
     else:
         return error('Invalid Method', 'The used http message isn\'t allowed.', '/login')

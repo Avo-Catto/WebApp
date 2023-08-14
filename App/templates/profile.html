@@ -24,10 +24,9 @@
     <hr class="side-break">
     <center>
         <div class="general-form" style="margin-top: 5vh; width: 90%;">
-            <p class="general-text"></p>
-            <img src="{{ url_for('static', filename='profile-imgs/{profile_img}') }}" alt="Profile image" class="profile-img row">
+            <img src="/static/img/profile/{{ profile_img }}" alt="Profile image" class="profile-img row">
         </div>
-        <p class="general-text">{{ profile_img }}</p>
+        <p class="general-text">DEBUG: {{ profile_img }}</p>
     </center>
 </body>
 </html>
