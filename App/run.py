@@ -49,10 +49,10 @@ if __name__ == '__main__':
             log.info('starting flask')
             app.run('127.0.0.1', 80, debug=args['no_debug'])
         except Exception as e:
-            session_clean_proc.terminate()
             log.error(f'the application couldn\'t be started because of error: {e.__str__()}')
-            log.info('this error occured probably, because the application wasn\'t set up properly, please run: python3 run.py --setup')
-    
+            log.info('This error occured probably, because of an error in the code or the application wasn\'t set up properly. If so, please run: python3 run.py --setup')
+            session_clean_proc.terminate()
+
     elif args.get('setup'):
         from src.sql import DB
         print('You are about to setup configs and databases for the application.')
@@ -120,3 +120,4 @@ if __name__ == '__main__':
 # TODO: 1. make profile viewable of data, 2. make blog posts in md, 3. make profile stuff customizable and posts too
 # TODO: make heading "TechCat-Blog" to a button and redirect to root
 # TODO: auf Freepic verweisen bei Profilbild <a href="https://www.flaticon.com/de/kostenlose-icons/katze" title="katze Icons">Katze Icons erstellt von Freepik - Flaticon</a>
+# TODO: the change profile input button should show that an image is selected

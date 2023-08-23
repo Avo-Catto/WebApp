@@ -4,6 +4,7 @@ from src.logger import Logger
 from src.sql import DB
 from src.exception import IntegrityError, NoSessionError
 from src.session import add_session, get_session_data
+from src.functions import save_profile_img
 from hashlib import sha256
 from uuid import uuid4
 from datetime import datetime, timedelta
@@ -99,38 +100,61 @@ def login() -> str:
         return error('Invalid Method', 'The used http message isn\'t allowed.', '/login')
 
 
-@app.route('/profile', methods=('GET',))
+@app.route('/profile', methods=('GET', 'POST'))
 def profile() -> str:
     """Profile page."""
     if request.method == 'GET':
-        try: 
-            unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
-
+        try: # get session stored data
+            unique_id, username = get_session_data(request.cookies.get('session'), ('unique_id', 'username'))
         except NoSessionError: 
             unique_id = 'anonymous'
+            username = 'Anonymous'
         finally: 
-            # check if profile image was uploaded and handle it
-            if exists(f'/static/img/profile/{unique_id}.png'): 
+            # check if profile image was uploaded or use default
+            if exists(f'static/img/profiles/{unique_id}.png'):
                 profile_img = f'{unique_id}.png'
+            elif exists(f'static/img/profiles/{unique_id}.jpg'):
+                profile_img = f'{unique_id}.jpg'
             else: profile_img = 'anonymous.png'
 
-            return render_template('profile.html', profile_img=profile_img)
-    else:
+        return render_template('profile.html', profile_img=profile_img, username=username)
+    
+    elif request.method == 'POST':
+        try: 
+            unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
+            try:
+                save_profile_img(unique_id, request.files.get('update-img'))
+                log.debug('profile was updated')
+                return success('Update Profile', 'Your profile was updated successful.', '/profile')
+            except TypeError: 
+                return error('Invalid Filetype', 'The filetype for the image isn\'t allowed.', '/profile')
+        except NoSessionError: 
+            return error('No Session', 'You have to be logged in to update your profile.', '/profile')
+    
+    else: 
         return error('Invalid Method', 'The used http message isn\'t allowed.', '/login')
 
 
-# custom error
+def success(success:str, message:str, _continue:str) -> str:
+    """
+    Custom "Operation Succeed" page with message.
+    :success: success title
+    :message: info about success
+    :_continue: redirect url
+    """
+    return render_template('success.html', success=success, message=message, _continue=_continue)
+
+
 def error(error:str, message:str, back:str) -> str:
     """
     Custom error page with message.
     :error: error name in header
     :message: info about error
-    :back: redirect button
+    :back: redirect url
     """
     return render_template('error.html', error=error, message=message, back=back)
 
 
-# error templates
 @app.errorhandler(404)
 def page_not_found(e):
     """Custom error 404 page."""
@@ -138,4 +162,4 @@ def page_not_found(e):
 
 # TODO: add functionality for multiple image types
 # TODO: create folder for every user for images
-# TODO: fix image
+# TODO: fix image size

@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@600&display=swap" rel="stylesheet">
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
-<body class="general-body">
+<body>
     <div class="bar">
         <h1 class="general-heading" style="display: inline;">TechCat-Blog</h1>
         <div class="bar-buttons-container">
@@ -23,10 +23,18 @@
     </div>
     <hr class="side-break">
     <center>
-        <div class="general-form" style="margin-top: 5vh; width: 90%;">
-            <img src="/static/img/profile/{{ profile_img }}" alt="Profile image" class="profile-img row">
-        </div>
-        <p class="general-text">DEBUG: {{ profile_img }}</p>
+        <form action="profile" method="post" enctype="multipart/form-data">
+            <div class="general-form" style="margin-top: 5vh; width: 90%;">
+                <img src="/static/img/profiles/{{ profile_img }}" alt="Profile image" class="profile-img row">
+                <br><br>
+                <label class="general-input-redirect-button">
+                    <input type="file" accept=".png,.jpg" name="update-img"/>
+                    Change
+                </label>
+            </div>
+            <input type="submit" value="update" class="general-input">
+            <p class="general-text">DEBUG: username: {{ username }}</p>
+        </form>
     </center>
 </body>
 </html>

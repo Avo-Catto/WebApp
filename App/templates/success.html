@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error</title>
+    <title>Success</title>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@600&display=swap" rel="stylesheet">
@@ -11,10 +11,10 @@
 </head>
 <body>
     <div class="general-form center">
-        <h1 class="general-heading">Error - {{ error }}</h1>
+        <h1 class="general-heading">Success - {{ success }}</h1>
         <center>
             <p class="general-text">{{ message }}</p>
-            <button class="general-redirect-button" onclick="redirect('{{ back }}')">back</button>
+            <button class="general-redirect-button" onclick="redirect('{{ _continue }}')">continue</button>
         </center>
     </div>
 </body>
