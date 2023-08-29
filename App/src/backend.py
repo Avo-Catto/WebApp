@@ -113,8 +113,8 @@ def profile() -> str:
             # check if profile image was uploaded or use default
             if exists(f'static/img/profiles/{unique_id}.png'):
                 profile_img = f'{unique_id}.png'
-            elif exists(f'static/img/profiles/{unique_id}.jpg'):
-                profile_img = f'{unique_id}.jpg'
+            elif exists(f'static/img/profiles/{unique_id}.jpeg'):
+                profile_img = f'{unique_id}.jpeg'
             else: profile_img = 'anonymous.png'
 
         return render_template('profile.html', profile_img=profile_img, username=username)

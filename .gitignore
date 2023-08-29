@@ -1,6 +1,7 @@
 .venv
 __pycache__
 test.*
+test/
 *.db
 config.json
 App/static/img/profiles/*

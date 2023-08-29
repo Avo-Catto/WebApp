@@ -194,7 +194,8 @@ body {
 }
 
 .profile-img {
-    width: 18vw;
+    width:18vw; 
+    height:18vw; 
     height: fit-content;
     border-radius: 50%;
     border: 2px solid #43A86A;
