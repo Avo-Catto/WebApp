@@ -109,7 +109,7 @@ class DB:
     def select(self, table:str, columns:str|tuple|list, where:str='', params:tuple=()) -> tuple|None:
         """
         Retrieve data from db.
-        example: where='WHERE username = ...'
+        example: where='WHERE uid = ...'
         """
         try:
             log.debug(f'get {columns} from db: {self.path}: table: {table}')
@@ -122,7 +122,7 @@ class DB:
     def delete(self, table:str, where:str, params:tuple=()) -> None:
         """
         Delete row in table where $where matches.
-        example: where='WHERE username = ...'
+        example: where='WHERE uid = ...'
         """
         try:
             log.debug(f'delete row in table: {table} where: {where}')
@@ -131,6 +131,19 @@ class DB:
         except Exception as e:
             log.error(f'error while deleting row in table: {table} in db: {self.path}: {e.__str__()}')
             raise e
-
+    
+    def update(self, table:str, data:dict, where:str, params:tuple=()) -> None:
+        """
+        Update columns in table where $where matches.
+        example: where='WHERE uid = ...' 
+        """
+        try:
+            log.debug(f'update row in table: {table} where: {where}')
+            data = ', '.join((f'{key} = "{value}"' for key, value in data.items()))
+            self._execute(f'UPDATE {table} SET {data} {where};', params)
+            self._commit()
+        except Exception as e:
+            log.error(f'error while updating row in table: {table} in db: {self.path}: {e.__str__()}')
+            raise e
 
 # TODO: add interactive mode

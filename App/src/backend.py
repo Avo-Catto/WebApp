@@ -75,7 +75,11 @@ def login() -> str:
         password = request.form.get('password', type=str)
 
         db = DB(DB_PATH)
-        try: password_hash, unique_id, username = db.select(TABLES['user-data'], ('password', 'unique_id', 'username'), f'WHERE "{email}" = email')[0]
+        try: 
+            password_hash, unique_id, username, email, firstname, lastname = db.select(
+                TABLES['user-data'], ('password', 'unique_id', 'username', 'email', 'firstname', 'lastname'), 
+                f'WHERE "{email}" = email')[0]
+            realname = f'{firstname} {lastname if lastname is not None else ""}'
         except TypeError: password_hash = None
         db.close()
         if password_hash is not None:
@@ -88,7 +92,7 @@ def login() -> str:
                 response = make_response(redirect('/profile'))
                 response.set_cookie(key='session', value=session, max_age=COOKIE_LIFETIME, expires=expires, secure=True, httponly=True, samesite='Strict')
                 # add session cookie to session table
-                add_session(unique_id, session, expires, username)
+                add_session(unique_id, session, expires, username, email, realname)
                 return response
             else:
                 log.debug(f'login failed: wrong password for email: {email}')
@@ -105,10 +109,12 @@ def profile() -> str:
     """Profile page."""
     if request.method == 'GET':
         try: # get session stored data
-            unique_id, username = get_session_data(request.cookies.get('session'), ('unique_id', 'username'))
+            unique_id, username, email, realname = get_session_data(request.cookies.get('session'), ('unique_id', 'username', 'email', 'realname'))
         except NoSessionError: 
             unique_id = 'anonymous'
             username = 'Anonymous'
+            email = 'anonymous@tech.blog'
+            realname = 'Bob Thomas'
         finally: 
             # check if profile image was uploaded or use default
             if exists(f'static/img/profiles/{unique_id}.png'):
@@ -117,20 +123,71 @@ def profile() -> str:
                 profile_img = f'{unique_id}.jpeg'
             else: profile_img = 'anonymous.png'
 
-        return render_template('profile.html', profile_img=profile_img, username=username)
+        return render_template('profile.html', profile_img=profile_img, username=username, email=email, realname=realname)
     
     elif request.method == 'POST':
         try: 
-            unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
-            try:
-                save_profile_img(unique_id, request.files.get('update-img'))
-                log.debug('profile was updated')
-                return success('Update Profile', 'Your profile was updated successful.', '/profile')
-            except TypeError: 
-                return error('Invalid Filetype', 'The filetype for the image isn\'t allowed.', '/profile')
+            log.debug('access session data')
+            unique_id, username, email, realname = get_session_data(request.cookies.get('session'), ('unique_id', 'username', 'email', 'realname'))
+
+            db = DB(DB_PATH)
+            password_hash = db.select(TABLES['user-data'], 'password', f'WHERE "{unique_id}" = unique_id')[0][0]
+            db.close()
+
+            data = dict()
+            # gather update data that doesn't require a password
+            if request.files.get('update-img').filename != '':
+                try: 
+                    save_profile_img(unique_id, request.files.get('update-img'))
+                    data.update({'img': True}) # only to check if profile image was updated
+                except TypeError: 
+                    return error('Invalid Filetype', 'The filetype for the image isn\'t allowed.', '/profile')
+            if request.form.get('username') != username: 
+                data.update({'username': request.form.get('username')})
+            
+            # gather update data that requires a password
+            if request.form.get('password') != '':
+                if bcrypt.check_password_hash(password_hash, request.form.get('password')):
+                    if request.form.get('realname') != '':
+                        name = request.form.get('realname').split()
+                        data.update({'firstname': name[0], 'lastname': name[1] if len(name) > 1 else None})
+                        del name
+                    if request.form.get('email') != '':
+                        data.update({'email': request.form.get('email')})
+                    if request.form.get('newpassword') != '':
+                        data.update({'password': bcrypt.generate_password_hash(request.form.get('newpassword')).decode()})
+                else: 
+                    return error('Wrong Password', 'The given password didn\'t match.', '/profile')
+
+            # update profile data
+            log.debug(f'>>>>>>> {data}')
+            if len(data) > 0:
+                try: data.pop('img')
+                except KeyError: pass
+                
+                if len(data) > 0:
+                    db = DB(DB_PATH)
+                    db.update(TABLES['user-data'], data, f'WHERE "{unique_id}" = unique_id')
+                    log.debug(f'updated successful user data for unique_id: {unique_id}')
+                    db.close()
+
+                    # update session
+                    session = uuid4().hex
+                    expires = datetime.now() + timedelta(seconds=COOKIE_LIFETIME)
+                    response = make_response(success('Update Profile', 'Your profile was updated successful', '/profile'))
+                    response.set_cookie(key='session', value=session, max_age=COOKIE_LIFETIME, expires=expires, secure=True, httponly=True, samesite='Strict')
+                    add_session(unique_id, session, expires, 
+                                username if data.get('username') != username else data.get('username'), 
+                                email if data.get('email') != email else data.get('email'), 
+                                realname if data.get('firstname') != realname.split()[0] else f"{data.get('firstname')} {'' if data.get('lastname') is None else data.get('lastname')}"
+                            )
+                    
+                    return response
+                return success('Update Profile', 'Your profile was updated successful', '/profile')
+            else:
+                return redirect('/profile')
         except NoSessionError: 
             return error('No Session', 'You have to be logged in to update your profile.', '/profile')
-    
     else: 
         return error('Invalid Method', 'The used http message isn\'t allowed.', '/login')
 
@@ -160,6 +217,7 @@ def page_not_found(e):
     """Custom error 404 page."""
     return render_template('404.html'), 404
 
-# TODO: add functionality for multiple image types
-# TODO: create folder for every user for images
-# TODO: fix image size
+# TODO: add customization functionality for other options in POST /profile
+# TODO: post stuff is being executed because the current data is sent, becuase I set it as value
+# TODO: write better code!
+# TODO: images don't become overwritten because of different extensions

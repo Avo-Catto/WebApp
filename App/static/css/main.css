@@ -201,3 +201,15 @@ body {
     border: 2px solid #43A86A;
     box-shadow: 0px 0px 10px #408D5E;
 }
+
+.profile-container {
+    white-space: nowrap;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+}
+
+.profile-box {
+    width: 33%;
+    text-align: center;
+}

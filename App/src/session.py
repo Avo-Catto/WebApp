@@ -16,14 +16,16 @@ DB_PATH = CONFIG.get('db')['path']
 TABLES = CONFIG.get('db')['tables']
 
 
-def add_session(unique_id:str, session_id:str, expires:datetime, username:str) -> None:
+def add_session(unique_id:str, session_id:str, expires:datetime, username:str, email:str, realname:str) -> None:
     """Add session cookie to db for validation."""
     db = DB(DB_PATH)
     data = {
         'unique_id': unique_id,
         'session_id': session_id,
         'expiration': expires,
-        'username': username
+        'username': username,
+        'email': email,
+        'realname': realname,
     }
     try: db.insert(TABLES['session'], data)
     except IntegrityError: 

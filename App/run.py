@@ -85,7 +85,7 @@ if __name__ == '__main__':
         print('Please enter "y" to create a new db.')
         db = DB(CONFIG.get('db')['path'])
 
-        db._create_table(
+        db._create_table( # user table
             CONFIG.get('db')['tables']['user-data'], (
                 'id integer PRIMARY KEY',
                 'unique_id text NOT NULL unique',
@@ -96,13 +96,15 @@ if __name__ == '__main__':
                 'password text NOT NULL',
             )
         )
-        db._create_table(
+        db._create_table( # session table
             CONFIG.get('db')['tables']['session'], (
                 'id integer PRIMARY KEY',
                 'unique_id text NOT NULL unique',
                 'session_id text',
                 'expiration timestamp',
                 'username text NOT NULL',
+                'email text NOT NULL',
+                'realname text NOT NULL'
             )
         )
         db.close()

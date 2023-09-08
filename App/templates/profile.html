@@ -22,19 +22,45 @@
         </div>
     </div>
     <hr class="side-break">
-    <center>
-        <form action="profile" method="post" enctype="multipart/form-data">
+    <form action="profile" method="post" enctype="multipart/form-data">
+        <center>
             <div class="general-form" style="margin-top: 5vh; width: 90%;">
-                <img src="/static/img/profiles/{{ profile_img }}" alt="Profile image" class="profile-img row">
-                <br><br>
-                <label class="general-input-redirect-button">
-                    <input type="file" accept=".png,.jpg" name="update-img"/>
-                    Change
-                </label>
+                <div class="profile-container">
+                    <div class="profile-box">
+                        <br><br><br>
+                        <h2 class="general-heading">Profile Image</h2>
+                        <br>
+                        <img src="/static/img/profiles/{{ profile_img }}" alt="Profile image" class="profile-img">
+                        <br><br><br><br>
+                        <label class="general-input-redirect-button">
+                            <input type="file" accept=".png,.jpg" name="update-img"/>
+                            Change
+                        </label>
+                    </div>
+                    <div class="profile-box">
+                        <br><br><br>
+                        <p class="general-text">Username:</p>
+                        <input name="username" style="margin-top: 0vh;" class="general-input" type="text" value="{{ username }}" placeholder="username">
+                        <p class="general-text">Real Name:</p>
+                        <input name="realname" style="margin-top: 0vh;" class="general-input" type="text" value="{{ realname }}" placeholder="realname (requires password)">
+                        <p class="general-text">E-Mail:</p>
+                        <input name="email" style="margin-top: 0vh;" class="general-input" type="email" value="{{ email }}" placeholder="email (requires password)">
+                        <p class="general-text">New Password:</p>
+                        <input name="newpassword" style="margin-top: 0vh;" class="general-input" type="password" placeholder="new password (requires password)">
+                        <p class="general-text">Password:</p>
+                        <input name="password" style="margin-top: 0vh;" class="general-input" type="password" placeholder="password (current password)">
+                    </div>
+                    <div class="profile-box">
+                        <h2 class="general-heading">Posts</h2>
+                        <p class="general-text">...</p>
+                    </div>
+                </div>
+                <center>
+                    <br><br><br>
+                    <input type="submit" value="update" class="general-input">
+                </center>
             </div>
-            <input type="submit" value="update" class="general-input">
-            <p class="general-text">DEBUG: username: {{ username }}</p>
-        </form>
-    </center>
+        </center>
+    </form>
 </body>
 </html>
