@@ -4,7 +4,7 @@ from src.exception import IntegrityError, JSONDecodeError, NoSessionError
 from time import sleep
 from datetime import datetime
 
-log = Logger('SessionManager')
+log = Logger('SessionLog')
 
 try:
     with open('./config.json', 'r') as f:

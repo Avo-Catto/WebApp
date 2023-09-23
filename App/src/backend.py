@@ -160,7 +160,7 @@ def profile() -> str:
                     return error('Wrong Password', 'The given password didn\'t match.', '/profile')
 
             # update profile data
-            log.debug(f'>>>>>>> {data}')
+            log.debug(f'user updated profile: {data}')
             if len(data) > 0:
                 try: data.pop('img')
                 except KeyError: pass
@@ -177,9 +177,9 @@ def profile() -> str:
                     response = make_response(success('Update Profile', 'Your profile was updated successful', '/profile'))
                     response.set_cookie(key='session', value=session, max_age=COOKIE_LIFETIME, expires=expires, secure=True, httponly=True, samesite='Strict')
                     add_session(unique_id, session, expires, 
-                                username if data.get('username') != username else data.get('username'), 
-                                email if data.get('email') != email else data.get('email'), 
-                                realname if data.get('firstname') != realname.split()[0] else f"{data.get('firstname')} {'' if data.get('lastname') is None else data.get('lastname')}"
+                                username if data.get('username') is None and data.get('username') != username else data.get('username'),
+                                email if data.get('email') is None and data.get('email') != email else data.get('email'),
+                                realname if data.get('firstname') != realname.split()[0] else f"{data.get('firstname')} {'' if data.get('lastname') is None else data.get('lastname')}" # maybe buggy?
                             )
                     
                     return response
@@ -217,7 +217,6 @@ def page_not_found(e):
     """Custom error 404 page."""
     return render_template('404.html'), 404
 
-# TODO: add customization functionality for other options in POST /profile
-# TODO: post stuff is being executed because the current data is sent, becuase I set it as value
 # TODO: write better code!
 # TODO: images don't become overwritten because of different extensions
+# TODO: display blog posts

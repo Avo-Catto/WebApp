@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from json import dump, load, JSONDecodeError
 from src.logger import Logger
 from os.path import exists
-from os import remove
+from os import remove, mkdir
 from multiprocessing import Process
 
 log = Logger('RunLog')
@@ -47,7 +47,7 @@ if __name__ == '__main__':
             session_clean_proc.start()
 
             log.info('starting flask')
-            app.run('127.0.0.1', 80, debug=args['no_debug'])
+            app.run('127.0.0.1', 8080, debug=args['no_debug'])
         except Exception as e:
             log.error(f'the application couldn\'t be started because of error: {e.__str__()}')
             log.info('This error occured probably, because of an error in the code or the application wasn\'t set up properly. If so, please run: python3 run.py --setup')
@@ -83,6 +83,7 @@ if __name__ == '__main__':
                 exit()
 
         print('Please enter "y" to create a new db.')
+        if not exists('./db/'): mkdir('./db/')
         db = DB(CONFIG.get('db')['path'])
 
         db._create_table( # user table

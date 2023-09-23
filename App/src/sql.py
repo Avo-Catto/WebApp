@@ -32,7 +32,7 @@ class DB:
         """Create new db file if not already there and return True if a db exists to connect to."""
         if not exists(db_path):
             if ask:
-                if question is None: question = f'The requested DB doesn\' exist, do you want to create a new one? [y/n] '
+                if question is None: question = f'The requested DB doesn\'t exist, do you want to create a new one? [y/n] '
                 inp = input(question).lower()
 
                 if inp == 'y':
