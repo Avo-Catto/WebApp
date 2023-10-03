@@ -124,3 +124,4 @@ if __name__ == '__main__':
 # TODO: make heading "TechCat-Blog" to a button and redirect to root
 # TODO: auf Freepic verweisen bei Profilbild <a href="https://www.flaticon.com/de/kostenlose-icons/katze" title="katze Icons">Katze Icons erstellt von Freepik - Flaticon</a>
 # TODO: the change profile input button should show that an image is selected
+# TODO: think about blog posts

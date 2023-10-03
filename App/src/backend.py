@@ -192,6 +192,11 @@ def profile() -> str:
         return error('Invalid Method', 'The used http message isn\'t allowed.', '/login')
 
 
+@app.route('/explore', methods=('GET',))
+def explore():
+    return render_template('explore.html')
+
+
 def success(success:str, message:str, _continue:str) -> str:
     """
     Custom "Operation Succeed" page with message.
