@@ -213,3 +213,13 @@ body {
     width: 33%;
     text-align: center;
 }
+
+.write-blog-box {
+    width: 98%;
+    height: 70%;
+    background-color: #151515;
+    border: 2px solid #43A86A;
+    border-radius: 20px;
+    box-shadow: 0px 0px 10px #43A86A;
+    outline: None;
+}

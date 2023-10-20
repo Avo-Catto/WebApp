@@ -22,3 +22,10 @@ def save_profile_img(uid:str, img:FileStorage) -> None:
     if ext in ('png', 'jpeg'):
         out_img.save(f'static/img/profiles/{uid}.{ext}', format=ext)
     else: raise TypeError('type of image isn\'t supported')
+
+def save_blog_post(uid:str, title:str, blog:str) -> None:
+    """Save blog in file."""
+    with open(f'static/blogs/{uid}_{title}.md', 'w') as f:
+        f.write(blog)
+
+# TODO: check if blog with same title already exists to avoid overwriting

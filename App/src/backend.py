@@ -4,7 +4,7 @@ from src.logger import Logger
 from src.sql import DB
 from src.exception import IntegrityError, NoSessionError
 from src.session import add_session, get_session_data
-from src.functions import save_profile_img
+from src.functions import save_profile_img, save_blog_post
 from hashlib import sha256
 from uuid import uuid4
 from datetime import datetime, timedelta
@@ -183,7 +183,7 @@ def profile() -> str:
                             )
                     
                     return response
-                return success('Update Profile', 'Your profile was updated successful', '/profile')
+                return success('Update Profile', 'Your profile was updated successfully', '/profile')
             else:
                 return redirect('/profile')
         except NoSessionError: 
@@ -193,8 +193,41 @@ def profile() -> str:
 
 
 @app.route('/explore', methods=('GET',))
-def explore():
+def explore() -> str:
+    """Explore page."""
     return render_template('explore.html')
+
+
+@app.route('/write', methods=('GET', 'POST'))
+def write() -> str:
+    """Write page."""
+    if request.method == 'GET':
+        return render_template('write.html')
+    
+    elif request.method == 'POST':
+        try: 
+            unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
+            title = request.form.get('title')
+            terms = request.form.get('terms')
+            blog = request.form.get('blog')
+            log.debug(f'user posted blog: {unique_id} - {title}')
+            
+            # save that stuff
+            save_blog_post(unique_id, title, blog)
+
+            return success('Post Blog', 'Your blog was posted successfully', '/explore')
+
+        except NoSessionError:
+            return error('No Session', 'You have to be logged in to update your profile.', '/write')
+    else:
+        return error('Invalid Method', 'The used http message isn\'t allowed.', '/write')
+
+
+@app.route('/read', methods=('GET',))
+def read() -> str:
+    """Read blog page."""
+    log.debug(request.args.get('blog'))
+    return render_template('read.html')
 
 
 def success(success:str, message:str, _continue:str) -> str:

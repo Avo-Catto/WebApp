@@ -114,6 +114,10 @@ if __name__ == '__main__':
         # save config to file
         with open('./config.json', 'w') as f:
             dump(CONFIG, f, indent=4)
+        
+        # blogs
+        if not exists('./static/blogs'): mkdir('./static/blogs')
+
 
 # TODO: think about how to handle main args and options (subparser?)
 # TODO: customizable port and host?

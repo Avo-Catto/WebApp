@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@600&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</head>
+<body>
+    <div class="bar">
+        <h1 class="general-heading" style="display: inline;">TechCat-Blog</h1>
+        <div class="bar-buttons-container">
+            <button class="bar-button" onclick="redirect('/explore')">Explore</button>
+            <button class="bar-button" onclick="redirect('/login')">Login</button>
+            <button class="bar-button" onclick="redirect('/signup')">Signup</button>
+            <button class="bar-button" onclick="redirect('/profile')">Profile</button>
+        </div>
+    </div>
+    <hr class="side-break">
+    <div class="center general-form">
+        <form method="post">
+            <h1 class="general-heading">Write Blog Post</h1>
+            <input class="general-input" placeholder="Title" name="title" type="text" required><br>
+            <input class="general-input" placeholder="Serch terms: term1,term2,..." name="terms" type="text" required>
+            <br><br>
+            <textarea class="write-blog-box general-text" name="blog" id="0" cols="40" rows="10"></textarea>
+            <br>
+            <center>
+                <input class="general-input" type="submit" value="Post">
+            </center>
+        </form>
+    </div>
+</body>
+</html>
