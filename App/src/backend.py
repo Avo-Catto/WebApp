@@ -4,7 +4,7 @@ from src.logger import Logger
 from src.sql import DB
 from src.exception import IntegrityError, NoSessionError
 from src.session import add_session, get_session_data
-from src.functions import save_profile_img, save_blog_post
+from src.functions import save_profile_img, save_blog_post, save_blog_entry
 from hashlib import sha256
 from uuid import uuid4
 from datetime import datetime, timedelta
@@ -206,16 +206,17 @@ def write() -> str:
     
     elif request.method == 'POST':
         try: 
-            unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
+            unique_id, username = get_session_data(request.cookies.get('session'), ('unique_id', 'username'))
             title = request.form.get('title')
             terms = request.form.get('terms')
             blog = request.form.get('blog')
             log.debug(f'user posted blog: {unique_id} - {title}')
             
             # save that stuff
-            save_blog_post(unique_id, title, blog)
-
-            return success('Post Blog', 'Your blog was posted successfully', '/explore')
+            if save_blog_post(unique_id, title, blog):
+                save_blog_entry(unique_id, username, title, terms)
+                return success('Post Blog', 'Your blog was posted successfully', '/explore')
+            else: return error('Blog Exists', 'You already have a blog with the same name.', '/write')
 
         except NoSessionError:
             return error('No Session', 'You have to be logged in to update your profile.', '/write')

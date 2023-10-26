@@ -28,6 +28,7 @@ class DB:
             log.critical('no db given')
             raise NoDBError
 
+
     def _create_db(self, db_path:str, ask:bool = False, question:str|None = None) -> bool:
         """Create new db file if not already there and return True if a db exists to connect to."""
         if not exists(db_path):
@@ -45,6 +46,7 @@ class DB:
         else: 
             return True
     
+
     def _execute(self, sql:str, params:tuple=()) -> tuple|None:
         """Execute sql code."""
         try: 
@@ -57,6 +59,7 @@ class DB:
             log.error(f'error while executing sql on db: {self.path}: {e.__str__()}')
             raise e
     
+
     def _create_table(self, name:str, columns:tuple|list) -> None:
         """
         Create new table in db.\n
@@ -75,14 +78,17 @@ class DB:
             log.error(f'error while creating new table: {name} on db: {self.path}: {e.__str__()}')
             raise e
 
+
     def _list_tables(self) -> tuple:
         """Returns a generator object of tables from db."""
         ex = self._execute('SELECT name FROM sqlite_master WHERE type="table";')
         return ex if ex is not None else ('')
 
+
     def _commit(self) -> None:
         """Commit executed code to db."""
         self.conn.commit()
+
 
     def close(self) -> None:
         """Close connection to DB."""
@@ -94,6 +100,7 @@ class DB:
             log.error(f'error while closing connection to db: {self.path}: {e.__str__()}')
             raise e
     
+
     def insert(self, table:str, data:dict) -> None:
         """Insert data into table."""
         try:
@@ -106,6 +113,7 @@ class DB:
             log.error(f'error while inserting data into table: {table} in db: {self.path}: {e.__str__()}')
             raise e
     
+
     def select(self, table:str, columns:str|tuple|list, where:str='', params:tuple=()) -> tuple|None:
         """
         Retrieve data from db.
@@ -119,6 +127,7 @@ class DB:
             log.error(f'error while retrieving data from table: {table} from db: {self.path}: {e.__str__()}')
             raise e
     
+
     def delete(self, table:str, where:str, params:tuple=()) -> None:
         """
         Delete row in table where $where matches.
@@ -131,6 +140,7 @@ class DB:
         except Exception as e:
             log.error(f'error while deleting row in table: {table} in db: {self.path}: {e.__str__()}')
             raise e
+    
     
     def update(self, table:str, data:dict, where:str, params:tuple=()) -> None:
         """
