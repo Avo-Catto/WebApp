@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index Page</title>
+    <title>Read Page</title>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,5 +22,11 @@
         </div>
     </div>
     <hr class="side-break">
+    <br>
+    <center>
+        <div class="general-text general-form read-blog-page">
+            {{ blog | safe }}
+        </div>
+    </center>
 </body>
 </html>

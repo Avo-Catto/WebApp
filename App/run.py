@@ -63,19 +63,18 @@ if __name__ == '__main__':
         if input('Are you sure you want to proceed? [y/n] ').lower() != 'y': 
             exit()
         
-        db_name = input('Filename of DB: ')
         CONFIG.update({
             'db': {
-                'path': f'db/{db_name}{".db" if not db_name.endswith((".db", ".database", ".sqlite3", ".sqlite")) else ""}',
+                'path': 'db/main.db',
                 'tables': {
-                    'user-data': f'{input("Name for table that holds the whole account data: ")}',
-                    'session': f'{input("Name for session table: ")}',
-                    'blog': f'{input("Name for table of blog stuff: ")}'
+                    'user-data': 'users',
+                    'session': 'sessions',
+                    'blog': 'blogs'
                 }
             },
             'vars': {
-                'cookie_livetime': int(input('Session cookie livetime in seconds: ')),
-                'session_cleanup': int(input('Time intervall between session table clean up: '))
+                'cookie_livetime': 43200,
+                'session_cleanup': 600
             }
         })
 
@@ -116,7 +115,7 @@ if __name__ == '__main__':
         db._create_table( # blog table
             CONFIG.get('db')['tables']['blog'], (
                 'id integer PRIMARY KEY',
-                'unique_id text NOT NULL unique',
+                'unique_id text NOT NULL',
                 'username text NOT NULL',
                 'title text NOT NULL',
                 'terms text'
@@ -132,12 +131,11 @@ if __name__ == '__main__':
         # blogs
         if not exists('./static/blogs'): mkdir('./static/blogs')
 
+        # info
+        log.info('Setup successful, you can change configs in config.json')
 
-# TODO: think about how to handle main args and options (subparser?)
+
 # TODO: customizable port and host?
-# TODO: setup mode, catch exceptions when updating configs + validate if tables have same name
-# TODO: make app stoppable -_- (it's because of the while loop in the proc...)
 # TODO: fix auto submit credentials if you try to change site (signup & login sites)
 # TODO: credits of freepic for profile image <a href="https://www.flaticon.com/de/kostenlose-icons/katze" title="katze Icons">Katze Icons erstellt von Freepik - Flaticon</a>
 # TODO: the change profile input button should show that an image is selected
-# TODO: blog posts

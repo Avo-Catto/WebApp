@@ -2,13 +2,15 @@ from flask import Flask, render_template, request, make_response, redirect
 from flask_bcrypt import Bcrypt
 from src.logger import Logger
 from src.sql import DB
-from src.exception import IntegrityError, NoSessionError
+from src.exception import IntegrityError, NoSessionError, InvalidBlogIDError
 from src.session import add_session, get_session_data
-from src.functions import save_profile_img, save_blog_post, save_blog_entry
+from src.functions import save_profile_img, save_blog_post, save_blog_entry, load_blog
 from hashlib import sha256
 from uuid import uuid4
 from datetime import datetime, timedelta
 from os.path import exists
+from random import choices
+
 
 # initzialize required stuff
 with open('./config.json', 'r') as f:
@@ -195,7 +197,12 @@ def profile() -> str:
 @app.route('/explore', methods=('GET',))
 def explore() -> str:
     """Explore page."""
-    return render_template('explore.html')
+    # get random blogs
+    db = DB(DB_PATH)
+    blogs = choices(db.select(TABLES.get('blog'), ('unique_id', 'title')), k=5)
+    blogs = tuple(map(lambda b: (f'{b[0]}_{b[1]}', b[1]), blogs)) # get blog names for url
+    db.close()
+    return render_template('explore.html', blogs=blogs)
 
 
 @app.route('/write', methods=('GET', 'POST'))
@@ -227,8 +234,15 @@ def write() -> str:
 @app.route('/read', methods=('GET',))
 def read() -> str:
     """Read blog page."""
-    log.debug(request.args.get('blog'))
-    return render_template('read.html')
+    if request.method == 'GET':
+        try:
+            blog_id = request.args.get('blog')
+            log.debug(f'requested blog: {blog_id}')
+            return render_template('read.html', blog=load_blog(blog_id))
+        except InvalidBlogIDError:
+            return error('Blog not found', 'The requested blog wasn\'t found.', '/explore')
+    else:
+        return error('Invalid Method', 'The used http message isn\'t allowed.', '/explore')
 
 
 def success(success:str, message:str, _continue:str) -> str:
@@ -257,5 +271,5 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 # TODO: write better code!
-# TODO: images don't become overwritten because of different extensions
-# TODO: display blog posts
+# TODO: search bar for blogs
+# TODO: make blogs editable and deletable

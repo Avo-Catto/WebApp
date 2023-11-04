@@ -155,5 +155,3 @@ class DB:
         except Exception as e:
             log.error(f'error while updating row in table: {table} in db: {self.path}: {e.__str__()}')
             raise e
-
-# TODO: add interactive mode

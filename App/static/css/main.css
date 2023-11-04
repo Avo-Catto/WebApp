@@ -224,3 +224,24 @@ body {
     box-shadow: 0px 0px 10px #43A86A;
     outline: None;
 }
+
+.read-blog-page {
+    width: 60%;
+    height: fit-content;
+}
+
+.blog-list-box {
+    width: 40%;
+    margin-top: 4vh;
+    padding: 20px;
+    background-color: #1C1C1C;
+    border: 2px solid #43A86A;
+    box-shadow: 0px 0px 10px #43A86A;
+    border-radius: 10px;
+    font-size: large;
+}
+
+.blog-list-box:hover {
+    background-color: #43A86A;
+    color: black;
+}

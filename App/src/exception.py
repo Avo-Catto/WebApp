@@ -16,3 +16,7 @@ class NoDBError(Exception):
 class NoSessionError(Exception):
     def __init__(self) -> None:
         super().__init__('session id not valid')
+
+class InvalidBlogIDError(Exception):
+    def __init__(self) -> None:
+        super().__init__('blog doesn\'t exist')

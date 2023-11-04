@@ -1,9 +1,11 @@
 from src.logger import Logger
+from src.sql import DB
+from src.exception import InvalidBlogIDError
 from werkzeug.datastructures import FileStorage
 from PIL import Image
 from os.path import exists
 from os import remove
-from src.sql import DB
+from markdown import markdown
 
 # initial stuff
 with open('./config.json', 'r') as f:
@@ -68,4 +70,10 @@ def save_blog_entry(uid:str, username:str, title:str, terms:str) -> None:
     })
     db.close()
 
-# TODO: update backend to show error if blog already exists
+
+def load_blog(blog_id:str) -> str:
+    """Load blog, raise InvalidBlogIDError if blog doesn't exist."""
+    if exists(f'static/blogs/{blog_id}.md'):
+        with open(f'static/blogs/{blog_id}.md', 'r') as f:
+            return markdown(f.read(), output_format='html')
+    else: raise InvalidBlogIDError

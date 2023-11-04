@@ -22,5 +22,15 @@
         </div>
     </div>
     <hr class="side-break">
+    <center>
+        {% for url, name in blogs %}
+
+            <br>
+            <button class="blog-list-box general-text" onclick="redirect('/read?blog={{ url }}')">
+                {{ name }}
+            </button>
+
+        {% endfor %}
+    </center>
 </body>
 </html>
