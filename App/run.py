@@ -65,11 +65,11 @@ if __name__ == '__main__':
         if input('Are you sure you want to proceed? [y/n] ').lower() != 'y': 
             exit()
 
-        try: map(lambda x: remove(f'./static/blogs/{x}'), listdir('./static/blogs'))
+        try: tuple(map(lambda x: remove(f'./static/blogs/{x}'), listdir('./static/blogs')))
         except Exception as e: 
             
             log.warning(f'exception caught at deleting blogs: {e.__str__()}')
-        try: map(lambda x: remove(f'./static/img/profiles/{x}') if x != 'anonymous.png' else ..., listdir('./static/img/profiles'))
+        try: tuple(map(lambda x: remove(f'./static/img/profiles/{x}') if x != 'anonymous.png' else ..., listdir('./static/img/profiles')))
         except Exception as e: 
             log.warning(f'exception caught at deleting profile images: {e.__str__()}')
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         except Exception as e: 
             log.warning(f'exception caught at deleting configs: {e.__str__()}')
 
-        log.debug(listdir('./static/img/profiles'))
+        log.info('cleanup succeed')
 
 
     if args.get('setup'):
