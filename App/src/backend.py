@@ -199,7 +199,11 @@ def explore() -> str:
     """Explore page."""
     # get random blogs
     db = DB(DB_PATH)
-    blogs = choices(db.select(TABLES.get('blog'), ('unique_id', 'title')), k=5)
+    db_res = db.select(TABLES.get('blog'), ('unique_id', 'title'))
+
+    if db_res is not None: blogs = choices(db_res, k=5)
+    else: blogs = (('noblock', 'noblock'),)
+    
     blogs = tuple(map(lambda b: (f'{b[0]}_{b[1]}', b[1]), blogs)) # get blog names for url
     db.close()
     return render_template('explore.html', blogs=blogs)

@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from json import dump, load, JSONDecodeError
 from src.logger import Logger
 from os.path import exists
-from os import remove, mkdir
+from os import remove, mkdir, listdir
 from multiprocessing import Process
 
 log = Logger('RunLog')
@@ -19,6 +19,7 @@ else:
     except JSONDecodeError:
         CONFIG:dict = dict()
 
+
 if __name__ == '__main__':
     parser = ArgumentParser(
         usage='python3 run.py *options',
@@ -32,9 +33,12 @@ if __name__ == '__main__':
     args = vars(parser.parse_args()) # parse args and convert to dict
     log.debug(f'args: {args}')
 
+
+    # why do I have this?
     if not any(tuple(args.values())[0:3]): # has to be adjusted maybe if adding new args
         parser.print_help()
         exit()
+
 
     if args.get('run'):
         try:
@@ -48,14 +52,38 @@ if __name__ == '__main__':
             session_clean_proc.start()
 
             log.info('starting flask')
-            app.run('127.0.0.1', 8080, debug=args['debug'])
+            app.run(CONFIG.get('run')['address'], CONFIG.get('run')['port'], debug=args['debug'])
+        
         except Exception as e:
             log.error(f'the application couldn\'t be started because of error: {e.__str__()}')
             log.info('This error occured probably, because of an error in the code or the application wasn\'t set up properly. If so, please run: python3 run.py --setup')
             session_clean_proc.terminate()
     
+
     if args.get('cleanup'):
-        ...
+        print('You are about to clean up the whole application.')
+        if input('Are you sure you want to proceed? [y/n] ').lower() != 'y': 
+            exit()
+
+        try: map(lambda x: remove(f'./static/blogs/{x}'), listdir('./static/blogs'))
+        except Exception as e: 
+            
+            log.warning(f'exception caught at deleting blogs: {e.__str__()}')
+        try: map(lambda x: remove(f'./static/img/profiles/{x}') if x != 'anonymous.png' else ..., listdir('./static/img/profiles'))
+        except Exception as e: 
+            log.warning(f'exception caught at deleting profile images: {e.__str__()}')
+
+        try: remove(CONFIG.get('db')['path'])
+        except Exception as e: 
+            if e.__str__() != "'NoneType' object is not subscriptable":
+                log.warning(f'exception caught at deleting db: {e.__str__()}')
+
+        try: remove('./config.json')
+        except Exception as e: 
+            log.warning(f'exception caught at deleting configs: {e.__str__()}')
+
+        log.debug(listdir('./static/img/profiles'))
+
 
     if args.get('setup'):
         from src.sql import DB
@@ -75,6 +103,10 @@ if __name__ == '__main__':
             'vars': {
                 'cookie_livetime': 43200,
                 'session_cleanup': 600
+            },
+            'run': {
+                'address': '127.0.0.1',
+                'port': 8080
             }
         })
 
@@ -131,6 +163,10 @@ if __name__ == '__main__':
         # blogs
         if not exists('./static/blogs'): mkdir('./static/blogs')
 
+        if not exists('./static/blogs/noblock_noblock.md'):
+            with open('./static/blogs/noblock_noblock.md', 'w') as f:
+                f.write('# Empty Blog\n\nYou will see this if no block is registered in the database.')
+
         # info
         log.info('Setup successful, you can change configs in config.json')
 
@@ -139,3 +175,5 @@ if __name__ == '__main__':
 # TODO: fix auto submit credentials if you try to change site (signup & login sites)
 # TODO: credits of freepic for profile image <a href="https://www.flaticon.com/de/kostenlose-icons/katze" title="katze Icons">Katze Icons erstellt von Freepik - Flaticon</a>
 # TODO: the change profile input button should show that an image is selected
+# TODO: make debugger mode global
+# TODO: fix cleanup option
