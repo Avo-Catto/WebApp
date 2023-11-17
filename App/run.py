@@ -171,7 +171,6 @@ if __name__ == '__main__':
         log.info('Setup successful, you can change configs in config.json')
 
 
-# TODO: customizable port and host?
 # TODO: fix auto submit credentials if you try to change site (signup & login sites)
 # TODO: credits of freepic for profile image <a href="https://www.flaticon.com/de/kostenlose-icons/katze" title="katze Icons">Katze Icons erstellt von Freepik - Flaticon</a>
 # TODO: the change profile input button should show that an image is selected
