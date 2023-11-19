@@ -163,6 +163,26 @@ def setup() -> None:
     log.info('Setup successful, you can change configs in config.json')
 
 
+def sql() -> None:
+    """SQL terminal to interact directly with the database."""
+    from src.sql import DB
+
+    # check if database exist
+    if not exists(CONFIG.get('db')['path']):
+        log.error(f'database doesn\'t exist: {CONFIG.get("db")["path"]}')
+        exit(1)
+
+    # start database terminal
+    db = DB(CONFIG.get('db')['path'])
+    print('You can execute commands on the database now.\bTo exit press: [ctrl] + [C]')
+    try:
+        while True:
+            try: print(f'[-]> {db.execute(input("[+]> "))}')
+            except Exception: continue
+    except KeyboardInterrupt:
+        db.close()
+
+
 if __name__ == '__main__':
     parser = ArgumentParser(
         usage='python3 run.py [options]',
@@ -185,3 +205,4 @@ if __name__ == '__main__':
     if args.get('run'):     run()
     if args.get('cleanup'): cleanup()
     if args.get('setup'):   setup()
+    if args.get('sql'):     sql()

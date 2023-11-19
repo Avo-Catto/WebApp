@@ -15,7 +15,8 @@ except (JSONDecodeError, FileNotFoundError):
     log.warning('failed to load config file')
 
 # update loglist
-log.remove_loglist(*CONFIG.get('log')['remove'])
+try: log.remove_loglist(*CONFIG.get('log')['remove'])
+except NameError: log.warning('couldn\'t update the loglist')
 
 
 class DB:

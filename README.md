@@ -11,7 +11,6 @@ More stuff coming soon...
 - search bar for blogs
 - button for writing blogs or even managing your own blogs
 - make blogs editable and deletable
-- interactive sql
 - fix auto submit credentials if you try to change site (signup & login sites)
 - use logging functions better
 - credits of freepic for [profile image](https://www.flaticon.com/de/kostenlose-icons/katze)
