@@ -14,7 +14,7 @@ More stuff coming soon...
 - interactive sql
 - fix auto submit credentials if you try to change site (signup & login sites)
 - use logging functions better
-- credits of freepic for profile image <a href="https://www.flaticon.com/de/kostenlose-icons/katze" title="katze Icons">Katze Icons erstellt von Freepik - Flaticon</a>
+- credits of freepic for [profile image](https://www.flaticon.com/de/kostenlose-icons/katze)
 - the change profile input button should show that an image is selected
 - write logs to files?
 - pentest!?!?
