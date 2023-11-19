@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, make_response, redirect
 from flask_bcrypt import Bcrypt
 from src.logger import Logger
 from src.sql import DB
-from src.exception import IntegrityError, NoSessionError, InvalidBlogIDError
+from src.exception import IntegrityError, NoSessionError, InvalidBlogIDError, JSONDecodeError
 from src.session import add_session, get_session_data
 from src.functions import save_profile_img, save_blog_post, save_blog_entry, load_blog
 from hashlib import sha256
@@ -11,16 +11,21 @@ from datetime import datetime, timedelta
 from os.path import exists
 from random import choices
 
+log = Logger('FlaskLog')
 
-# initzialize required stuff
-with open('./config.json', 'r') as f:
-    CONFIG:dict = __import__('json').load(f)
+try:
+    with open('./config.json', 'r') as f:
+        CONFIG:dict = __import__('json').load(f)
+except JSONDecodeError:
+    log.critical('failed to load config file')
+    exit(1)
+
+# update loglist
+log.remove_loglist(*CONFIG.get('log')['remove'])
 
 DB_PATH = CONFIG.get('db')['path']
 TABLES = CONFIG.get('db')['tables']
 COOKIE_LIFETIME = CONFIG.get('vars')['cookie_livetime'] # 86400 seconds = 24 hours
-
-log = Logger('FlaskLog')
 
 app = Flask(
     import_name=__name__,
@@ -273,7 +278,3 @@ def error(error:str, message:str, back:str) -> str:
 def page_not_found(e):
     """Custom error 404 page."""
     return render_template('404.html'), 404
-
-# TODO: write better code!
-# TODO: search bar for blogs
-# TODO: make blogs editable and deletable

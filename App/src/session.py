@@ -10,7 +10,11 @@ try:
     with open('./config.json', 'r') as f:
         CONFIG:dict = __import__('json').load(f)
 except JSONDecodeError:
-    log.critical('config file couldn\'t be loaded: some functions will raise errors')
+    log.critical('failed to load config file')
+    exit(1)
+
+# update loglist
+log.remove_loglist(*CONFIG.get('log')['remove'])
 
 DB_PATH = CONFIG.get('db')['path']
 TABLES = CONFIG.get('db')['tables']

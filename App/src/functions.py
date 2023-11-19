@@ -1,22 +1,28 @@
 from src.logger import Logger
 from src.sql import DB
-from src.exception import InvalidBlogIDError
+from src.exception import InvalidBlogIDError, JSONDecodeError
 from werkzeug.datastructures import FileStorage
 from PIL import Image
 from os.path import exists
 from os import remove
 from markdown import markdown
 
-# initial stuff
-with open('./config.json', 'r') as f:
-    CONFIG:dict = __import__('json').load(f)
+log = Logger('FunctionsLog')
+
+try:
+    with open('./config.json', 'r') as f:
+        CONFIG:dict = __import__('json').load(f)
+except JSONDecodeError:
+    log.critical('failed to load config file')
+    exit(1)
+
+# update loglist
+log.remove_loglist(*CONFIG.get('log')['remove'])
 
 DB_PATH = CONFIG.get('db')['path']
 TABLES = CONFIG.get('db')['tables']
 
-log = Logger('FunctionsLog')
 
-# profile image functions
 def save_profile_img(uid:str, img:FileStorage) -> None:
     """Save and crop profile image."""
     input_img = Image.open(img.stream)

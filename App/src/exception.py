@@ -9,9 +9,9 @@ class TableExistError(Exception):
     def __init__(self, table_name:str) -> None:
         super().__init__(f'table already exist: \"{table_name}\"')
 
-class NoDBError(Exception):
+class DBConnectionFailedError(Exception):
     def __init__(self) -> None:
-        super().__init__('no db were selected')
+        super().__init__('failed to connect to database')
 
 class NoSessionError(Exception):
     def __init__(self) -> None:
