@@ -16,7 +16,6 @@ More stuff coming soon...
 - use logging functions better
 - credits of freepic for profile image <a href="https://www.flaticon.com/de/kostenlose-icons/katze" title="katze Icons">Katze Icons erstellt von Freepik - Flaticon</a>
 - the change profile input button should show that an image is selected
-- make debugging arg global
 - write logs to files?
 - pentest!?!?
 - containerize application using docker
