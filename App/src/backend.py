@@ -89,17 +89,19 @@ def login() -> str:
             realname = f'{firstname} {lastname if lastname is not None else ""}'
         except TypeError: password_hash = None
         db.close()
+
         if password_hash is not None:
             if bcrypt.check_password_hash(password_hash, password):
-                log.debug(f'successful login: retrieved data from user from db: {DB_PATH}')
-                
+                log.debug('login succeed')
                 # generate and set session cookie
                 session = uuid4().hex
                 expires = datetime.now() + timedelta(seconds=COOKIE_LIFETIME)
                 response = make_response(redirect('/profile'))
                 response.set_cookie(key='session', value=session, max_age=COOKIE_LIFETIME, expires=expires, secure=True, httponly=True, samesite='Strict')
+                log.debug('session cookie set')
                 # add session cookie to session table
                 add_session(unique_id, session, expires, username, email, realname)
+                log.debug('session cookie added')
                 return response
             else:
                 log.debug(f'login failed: wrong password for email: {email}')

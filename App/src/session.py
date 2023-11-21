@@ -32,9 +32,8 @@ def add_session(unique_id:str, session_id:str, expires:datetime, username:str, e
         'realname': realname,
     }
     try: db.insert(TABLES['session'], data)
-    except IntegrityError: 
-        log.warning('session already active')
-        log.info(f'exceptions handled in db: {db.path} table: {TABLES["session"]}')
+    except IntegrityError:
+        log.debug(f'update session: {session_id}')
         db.delete(TABLES['session'], f'WHERE unique_id = "{unique_id}"')
         db.insert(TABLES['session'], data)
     db.close()

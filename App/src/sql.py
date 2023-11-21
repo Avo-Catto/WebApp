@@ -33,7 +33,7 @@ class DB:
         
 
     def create_db(db_path:str, ask:bool = False, question:str|None = None) -> bool:
-        """Create new db file if not existing and return True if a db exists to connect to."""
+        """Create new db file. Returns True if new DB was created and only returns False if creation was aborted by the user."""
         if ask:
             if question is None: question = 'Do you want to create a new database?'
             inp = input(f'{question} [y/n] ').lower()

@@ -4,17 +4,16 @@ from src.logger import Logger
 from os.path import exists
 from os import remove, mkdir, listdir
 from multiprocessing import Process
+from secrets import token_hex
 
 log = Logger('RunLog')
 
 # load config
-if exists('./config.json'):
-    try:
-        with open('./config.json', 'r') as f:
-            CONFIG:dict = load(f)
-    except JSONDecodeError:
-        CONFIG:dict = dict()
-else: 
+try:
+    with open('./config.json', 'r') as f:
+        CONFIG:dict = __import__('json').load(f)
+except (JSONDecodeError, FileNotFoundError):
+    log.warning('failed to load config file')
     CONFIG:dict = dict()
 
 
@@ -23,6 +22,12 @@ def run() -> None:
     try:
         from src.backend import app
         from src.session import session_cleanup
+        
+        # flask configurations
+        app.config.update(
+            SESSION_COOKIE_SAMESITE = True,
+            SECRET_KEY=CONFIG.get('secret_key').encode()
+        )
 
         # start session cleanup background process
         log.info('starting session cleanup proc')
@@ -31,11 +36,15 @@ def run() -> None:
 
         # run application
         log.info('starting flask')
-        app.run(CONFIG.get('run')['address'], CONFIG.get('run')['port'], debug=args['debug'])
+        app.run(
+            host=CONFIG.get('run')['address'], 
+            port=CONFIG.get('run')['port'], 
+            debug=args['debug'],
+            ssl_context='adhoc' # only in development environment
+        )
     
     except Exception as e:
-        log.error(f'the application couldn\'t be started because of error: {e.__str__()}')
-        log.info('This error occured probably, because of an error in the code or the application wasn\'t set up properly. If so, please run: python3 run.py --setup')
+        log.error(f'the application couldn\'t start because of an error: {e.__str__()}')
         try: session_clean_proc.terminate()
         except Exception as e: log.warning(e.__str__())
 
@@ -84,6 +93,7 @@ def setup() -> None:
     
     # config file
     CONFIG.update({
+        'secret_key': token_hex(16),
         'db': {
             'path': 'db/main.db',
             'tables': {
@@ -111,11 +121,14 @@ def setup() -> None:
 
     # database stuff
     if not exists('./db/'): mkdir('./db/') # db directory
-    DB.create_db( # db file
+    res = DB.create_db( # db file
         CONFIG.get('db')['path'], 
         True if exists(CONFIG.get('db')['path']) else False,
         'Do you want to overwrite the current setup?'
     )
+    if not res: 
+        log.info('creating new db aborted by user')
+        exit(0)
     db = DB(CONFIG.get('db')['path']) # connect to db
 
     # table in db
@@ -206,3 +219,6 @@ if __name__ == '__main__':
     if args.get('cleanup'): cleanup()
     if args.get('setup'):   setup()
     if args.get('sql'):     sql()
+
+
+# TODO: is revealing session cookies and user credentials in the logs bad practice?
