@@ -3,7 +3,7 @@ from flask_bcrypt import Bcrypt
 from src.logger import Logger
 from src.sql import DB
 from src.exception import IntegrityError, NoSessionError, InvalidBlogIDError, JSONDecodeError
-from src.session import add_session, get_session_data
+from src.session import add_session, get_session_data, remove_session
 from src.functions import save_profile_img, save_blog_post, save_blog_entry, load_blog
 from hashlib import sha256
 from uuid import uuid4
@@ -111,6 +111,15 @@ def login() -> str:
             return error('Authentication Failed', 'The email doesn\'t exist in the database.', '/login')
     else:
         return error('Invalid Method', 'The used http message isn\'t allowed.', '/login')
+
+
+@app.route('/logout', methods=('GET',))
+def logout() -> redirect:
+    if request.method == 'GET':
+        remove_session(request.cookies.get('session'))
+        return success('Logout Succeed', 'You were logged out successfully.', '/profile')
+    else:
+        return error('Invalid Method', 'The used http message isn\'t allowed.', '/profile')
 
 
 @app.route('/profile', methods=('GET', 'POST'))

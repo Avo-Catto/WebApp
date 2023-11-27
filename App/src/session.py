@@ -39,12 +39,21 @@ def add_session(unique_id:str, session_id:str, expires:datetime, username:str, e
     db.close()
 
 
+def remove_session(session_id:str) -> None:
+    """Remove session cookie from db."""
+    db = DB(DB_PATH)
+    try: db.delete(TABLES['session'], f'WHERE session_id = "{session_id}"')
+    except TypeError: raise NoSessionError
+    finally: db.close()
+
+
 def get_session_data(session_id:str, data:str|tuple|list) -> tuple:
     """Return requested data of session or raise NoSessionError if session doesn't exist."""
     db = DB(DB_PATH)
     data = (data, ) if type(data) == str else data # handle string type
     try: return db.select(TABLES['session'], data, f'WHERE session_id = "{session_id}"')[0]
     except TypeError: raise NoSessionError
+    finally: db.close()
 
 
 def session_cleanup(sleep_time: int) -> None:
