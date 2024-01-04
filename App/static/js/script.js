@@ -1,3 +1,3 @@
 function redirect(url) {
-    document.location = url;
+    window.top.location.href = url;
 }

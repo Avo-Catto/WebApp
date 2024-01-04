@@ -64,7 +64,7 @@ def save_blog_post(uid:str, title:str, blog:str) -> bool:
         return False
 
 
-def save_blog_entry(uid:str, username:str, title:str, terms:str) -> None:
+def save_blog_entry(uid:str, username:str, title:str, tags:str) -> None:
     """Save blog data to db."""
     log.info(f'save blog entry for: {username}: {title}')
     db = DB(DB_PATH)
@@ -72,7 +72,7 @@ def save_blog_entry(uid:str, username:str, title:str, terms:str) -> None:
         'unique_id': uid,
         'username': username,
         'title': title,
-        'terms': terms
+        'tags': tags
     })
     db.close()
 

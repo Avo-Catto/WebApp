@@ -12,15 +12,14 @@
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body>
-    <div class="bar">
-        <h1 class="general-heading" style="display: inline;">TechCat-Blog</h1>
-        <div class="bar-buttons-container">
-            <button class="bar-button" onclick="redirect('/explore')">Explore</button>
-            <button class="bar-button" onclick="redirect('/login')">Login</button>
-            <button class="bar-button" onclick="redirect('/signup')">Signup</button>
-            <button class="bar-button" onclick="redirect('/profile')">Profile</button>
-        </div>
-    </div>
+    <iframe
+        src="{{ url_for('navbar') }}"
+        scrolling="no"
+        frameborder="0"
+        width="100%"
+        height="50vh"
+    >
+    </iframe>
     <hr class="side-break">
     <br>
     <center>

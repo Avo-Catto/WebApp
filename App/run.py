@@ -40,7 +40,7 @@ def run() -> None:
             host=CONFIG.get('run')['address'], 
             port=CONFIG.get('run')['port'], 
             debug=args['debug'],
-            ssl_context='adhoc' # only in development environment
+            # ssl_context='adhoc' # only in development environment
         )
     
     except Exception as e:
@@ -160,7 +160,7 @@ def setup() -> None:
             'unique_id text NOT NULL',
             'username text NOT NULL',
             'title text NOT NULL',
-            'terms text'
+            'tags text'
         )
     )
     db.close()

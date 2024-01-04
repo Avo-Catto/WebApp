@@ -12,21 +12,20 @@
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body>
-    <div class="bar">
-        <h1 class="general-heading" style="display: inline;">TechCat-Blog</h1>
-        <div class="bar-buttons-container">
-            <button class="bar-button" onclick="redirect('/explore')">Explore</button>
-            <button class="bar-button" onclick="redirect('/login')">Login</button>
-            <button class="bar-button" onclick="redirect('/signup')">Signup</button>
-            <button class="bar-button" onclick="redirect('/profile')">Profile</button>
-        </div>
-    </div>
+    <iframe
+        src="{{ url_for('navbar') }}"
+        scrolling="no"
+        frameborder="0"
+        width="100%"
+        height="50vh"
+    >
+    </iframe>
     <hr class="side-break">
     <div class="center general-form">
         <form method="post">
             <h1 class="general-heading">Write Blog Post</h1>
             <input class="general-input" placeholder="Title" name="title" type="text" required><br>
-            <input class="general-input" placeholder="Serch terms: term1,term2,..." name="terms" type="text" required>
+            <input class="general-input" placeholder="Serch tags: tag1,tag2,..." name="tags" type="text" required>
             <br><br>
             <textarea class="write-blog-box general-text" placeholder="You can write your blog in markdown here." name="blog" id="0" cols="40" rows="10"></textarea>
             <br>

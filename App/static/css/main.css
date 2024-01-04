@@ -239,6 +239,7 @@ body {
     box-shadow: 0px 0px 10px #43A86A;
     border-radius: 10px;
     font-size: large;
+    cursor: pointer;
 }
 
 .blog-list-box:hover {

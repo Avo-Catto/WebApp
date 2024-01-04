@@ -38,8 +38,8 @@ bcrypt = Bcrypt(app)
 # main flask app
 @app.route('/', methods=('GET',))
 def index() -> str:
-    """Root page."""
-    return render_template('index.html')
+    """Root path."""
+    return redirect('/explore')
 
 
 @app.route('/signup', methods=('GET', 'POST'))
@@ -117,9 +117,11 @@ def login() -> str:
 def logout() -> redirect:
     if request.method == 'GET':
         remove_session(request.cookies.get('session'))
-        return success('Logout Succeed', 'You were logged out successfully.', '/profile')
+        resplonse = make_response(success('Logout Succeed', 'You were logged out successfully.', '/explore'))
+        resplonse.delete_cookie('session')
+        return resplonse
     else:
-        return error('Invalid Method', 'The used http message isn\'t allowed.', '/profile')
+        return error('Invalid Method', 'The used http message isn\'t allowed.', '/explore')
 
 
 @app.route('/profile', methods=('GET', 'POST'))
@@ -213,16 +215,54 @@ def profile() -> str:
 @app.route('/explore', methods=('GET',))
 def explore() -> str:
     """Explore page."""
-    # get random blogs
-    db = DB(DB_PATH)
-    db_res = db.select(TABLES.get('blog'), ('unique_id', 'title'))
+    if request.method == 'GET':
+        if request.args.get('blog'):
+            try:
+                blog_id = request.args.get('blog')
+                log.debug(f'requested blog: {blog_id}')
+                return render_template('read.html', blog=load_blog(blog_id))
+            except InvalidBlogIDError:
+                return error('Blog not found', 'The requested blog wasn\'t found.', '/explore')
+        
+        elif request.args.get('search'):
+            search = request.args.get('search').split()
+            tags = []
+            for i in search:
+                if i.startswith('#'):
+                    tags.append(i.removeprefix('#'))
+                    search.remove(i)
+            
+            log.debug(f"{request.args.get('search')=}")
+            log.debug(f'{tags=}')
+            log.debug(f'{search=}')
 
-    if db_res is not None: blogs = choices(db_res, k=5)
-    else: blogs = (('noblock', 'noblock'),)
-    
-    blogs = tuple(map(lambda b: (f'{b[0]}_{b[1]}', b[1]), blogs)) # get blog names for url
-    db.close()
-    return render_template('explore.html', blogs=blogs)
+            try:
+                db = DB(DB_PATH)
+                where_clause = f'WHERE {f"title LIKE \"%{" ".join(search)}%\"" if search else ""}{" AND " if search and tags else ""}{"tags LIKE \"%{}%\" AND" * len(tags)}'.format(*tags).removesuffix(' AND')
+                blogs = db.select(TABLES.get('blog'), ('unique_id', 'title'), where=where_clause)
+                log.debug(3)
+                blogs = tuple(map(lambda b: (f'{b[0]}_{b[1]}', b[1]), blogs))
+                return render_template('explore.html', blogs=blogs)
+            
+            except TypeError: 
+                return error('No Blog Found', 'No blog was found.', '/explore')
+            
+            finally: 
+                db.close()
+        
+        else:
+            # get random blogs
+            db = DB(DB_PATH)
+            db_res = db.select(TABLES.get('blog'), ('unique_id', 'title'))
+
+            if db_res is not None: blogs = choices(db_res, k=5)
+            else: blogs = (('noblock', 'noblock'),)
+            
+            blogs = tuple(map(lambda b: (f'{b[0]}_{b[1]}', b[1]), blogs)) # get blog names for url
+            db.close()
+            return render_template('explore.html', blogs=blogs)
+    else:
+        return error('Invalid Method', 'The used http message isn\'t allowed.', '/explore')
 
 
 @app.route('/write', methods=('GET', 'POST'))
@@ -235,13 +275,13 @@ def write() -> str:
         try: 
             unique_id, username = get_session_data(request.cookies.get('session'), ('unique_id', 'username'))
             title = request.form.get('title')
-            terms = request.form.get('terms')
+            tags = request.form.get('tags')
             blog = request.form.get('blog')
             log.debug(f'user posted blog: {unique_id} - {title}')
             
             # save that stuff
             if save_blog_post(unique_id, title, blog):
-                save_blog_entry(unique_id, username, title, terms)
+                save_blog_entry(unique_id, username, title, tags)
                 return success('Post Blog', 'Your blog was posted successfully', '/explore')
             else: return error('Blog Exists', 'You already have a blog with the same name.', '/write')
 
@@ -251,18 +291,10 @@ def write() -> str:
         return error('Invalid Method', 'The used http message isn\'t allowed.', '/write')
 
 
-@app.route('/read', methods=('GET',))
-def read() -> str:
-    """Read blog page."""
-    if request.method == 'GET':
-        try:
-            blog_id = request.args.get('blog')
-            log.debug(f'requested blog: {blog_id}')
-            return render_template('read.html', blog=load_blog(blog_id))
-        except InvalidBlogIDError:
-            return error('Blog not found', 'The requested blog wasn\'t found.', '/explore')
-    else:
-        return error('Invalid Method', 'The used http message isn\'t allowed.', '/explore')
+@app.route('/navbar', methods=('GET',))
+def navbar() -> str:
+    """Loads the navigation bar."""
+    return render_template('navbar.html', session=True if request.cookies.get('session') else False)
 
 
 def success(success:str, message:str, _continue:str) -> str:
