@@ -20,3 +20,7 @@ class NoSessionError(Exception):
 class InvalidBlogIDError(Exception):
     def __init__(self) -> None:
         super().__init__('blog doesn\'t exist')
+
+class UserNotFoundError(Exception):
+    def __init__(self) -> None:
+        super().__init__('user not found')

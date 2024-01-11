@@ -51,8 +51,20 @@
                     </div>
                     <div class="profile-box">
                         <h2 class="general-heading">Posts</h2>
-                        <p class="general-text">...</p>
-                        <button class="general-redirect-button" type="button" onclick="redirect('/write')">Write Blog</button>
+                        <center>
+                            <div class="profile-blog-list-box">
+                            {% for url, name in blogs %}
+
+                                <br>
+                                <button class="blog-list-box general-text" style="width: 80%;" onclick="redirect('/explore?blog={{ url }}'); return false;">
+                                    {{ name }}
+                                </button>
+                    
+                            {% endfor %}
+                            </div>
+                        </center>
+                        <br>
+                        <button class="general-redirect-button" type="button" onclick="redirect('/blog/write')">Write Blog</button>
                     </div>
                 </div>
                 <center>

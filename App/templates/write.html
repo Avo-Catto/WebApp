@@ -24,10 +24,10 @@
     <div class="center general-form">
         <form method="post">
             <h1 class="general-heading">Write Blog Post</h1>
-            <input class="general-input" placeholder="Title" name="title" type="text" required><br>
-            <input class="general-input" placeholder="Serch tags: tag1,tag2,..." name="tags" type="text" required>
+            <input class="general-input" placeholder="Title" name="title" type="text" value="{{ title }}" required><br>
+            <input class="general-input" placeholder="Serch tags: tag1,tag2,..." name="tags" type="text" value="{{ tags }}" required>
             <br><br>
-            <textarea class="write-blog-box general-text" placeholder="You can write your blog in markdown here." name="blog" id="0" cols="40" rows="10"></textarea>
+            <textarea class="write-blog-box general-text" placeholder="You can write your blog in markdown here." name="blog" id="0" cols="40" rows="10">{{ blog }}</textarea>
             <br>
             <center>
                 <input class="general-input" type="submit" value="Post">

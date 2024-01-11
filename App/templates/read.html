@@ -26,6 +26,13 @@
         <div class="general-text general-form read-blog-page">
             {{ blog | safe }}
         </div>
+        <br>
+        <a class="general-text" href="/profile?view={{ unique_id }}">by {{ username }}</a>
+        <br>
+        {% if authorized %}
+            <button class="general-redirect-button" onclick="redirect('/blog/delete?id={{ blog_id }}')">Delete</button>
+            <button class="general-redirect-button" onclick="redirect('/blog/edit?id={{ blog_id }}')">Edit</button>
+        {% endif %}
     </center>
 </body>
 </html>

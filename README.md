@@ -6,13 +6,14 @@ More stuff coming soon...
 
 > **Tip:** Searchbar on /explore: searches for title, except the word starts with #, then it's searching for tags
 
+run docker: `docker run --name webapp -dp 127.0.0.1:8080:8080 webapp`
+
 
 ## TODO
 
-- make blogs editable and deletable (don't forget the button)
-- viewable accounts
 - improve logging
-- credits of freepic for [profile image](https://www.flaticon.com/de/kostenlose-icons/katze)
+- comments
 - docker: handle input at setup if data wants to be kept
 - docker: make container restartable without data loss
 - make session cleanup process restarting at reloading flask
+- credits of freepic for [profile image](https://www.flaticon.com/de/kostenlose-icons/katze)

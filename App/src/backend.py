@@ -2,9 +2,9 @@ from flask import Flask, render_template, request, make_response, redirect
 from flask_bcrypt import Bcrypt
 from src.logger import Logger
 from src.sql import DB
-from src.exception import IntegrityError, NoSessionError, InvalidBlogIDError, JSONDecodeError
+from src.exception import IntegrityError, NoSessionError, InvalidBlogIDError, JSONDecodeError, UserNotFoundError
 from src.session import add_session, get_session_data, remove_session
-from src.functions import save_profile_img, save_blog_post, save_blog_entry, load_blog
+from src.functions import save_profile_img, save_blog_post, save_blog_entry, load_blog_html, load_blog_plain, delete_blog_entry, delete_blog_post
 from hashlib import sha256
 from uuid import uuid4
 from datetime import datetime, timedelta
@@ -129,12 +129,27 @@ def profile() -> str:
     """Profile page."""
     if request.method == 'GET':
         try: # get session stored data
-            unique_id, username, email, realname = get_session_data(request.cookies.get('session'), ('unique_id', 'username', 'email', 'realname'))
+            if request.args.get('view'):
+                unique_id = request.args.get('view')
+                try:
+                    db = DB(DB_PATH)
+                    log.warning(db.select(TABLES['user-data'], ('username', 'firstname', 'lastname', 'email'), f'WHERE unique_id="{unique_id}"')[0])
+                    username, firstname, lastname, email = db.select(TABLES['user-data'], ('username', 'firstname', 'lastname', 'email'), f'WHERE unique_id="{unique_id}"')[0]
+                    realname = f'{firstname} {lastname}'
+                    db.close()
+
+                except TypeError:
+                    db.close()
+                    raise NoSessionError
+            else:
+                unique_id, username, email, realname = get_session_data(request.cookies.get('session'), ('unique_id', 'username', 'email', 'realname'))
+
         except NoSessionError: 
             unique_id = 'anonymous'
             username = 'Anonymous'
             email = 'anonymous@tech.blog'
             realname = 'Bob Thomas'
+        
         finally: 
             # check if profile image was uploaded or use default
             if exists(f'static/img/profiles/{unique_id}.png'):
@@ -143,8 +158,14 @@ def profile() -> str:
                 profile_img = f'{unique_id}.jpeg'
             else: profile_img = 'anonymous.png'
 
-        return render_template('profile.html', profile_img=profile_img, username=username, email=email, realname=realname)
-    
+            db = DB(DB_PATH)
+            blogs = db.select(TABLES.get('blog'), ('unique_id', 'title'), where=f'WHERE unique_id="{unique_id}"')
+            try: blogs = tuple(map(lambda b: (f'{b[0]}_{b[1]}', b[1]), blogs))
+            except TypeError: blogs = ()
+            db.close()
+
+        return render_template('profile.html', profile_img=profile_img, username=username, email=email, realname=realname, blogs=blogs)
+
     elif request.method == 'POST':
         try: 
             log.debug('access session data')
@@ -219,8 +240,21 @@ def explore() -> str:
         if request.args.get('blog'):
             try:
                 blog_id = request.args.get('blog')
+                uid = blog_id.split("_")[0]
+                try:
+                    unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
+                    authorized = True if unique_id == uid else False
+                except NoSessionError: authorized = False
+                try: 
+                    db = DB(DB_PATH)
+                    username = db.select(TABLES['blog'], 'username', f'WHERE unique_id="{uid}"')[0][0]
+                    db.close()
+                except TypeError: 
+                    db.close()
+                    username = 'anonymous'
                 log.debug(f'requested blog: {blog_id}')
-                return render_template('read.html', blog=load_blog(blog_id))
+                return render_template('read.html', blog=load_blog_html(blog_id), unique_id=uid, username=username, authorized=authorized, blog_id=blog_id)
+            
             except InvalidBlogIDError:
                 return error('Blog not found', 'The requested blog wasn\'t found.', '/explore')
         
@@ -231,64 +265,95 @@ def explore() -> str:
                 if i.startswith('#'):
                     tags.append(i.removeprefix('#'))
                     search.remove(i)
-            
-            log.debug(f"{request.args.get('search')=}")
-            log.debug(f'{tags=}')
-            log.debug(f'{search=}')
-
             try:
                 db = DB(DB_PATH)
                 where_clause = f'WHERE {f"title LIKE \"%{" ".join(search)}%\"" if search else ""}{" AND " if search and tags else ""}{"tags LIKE \"%{}%\" AND" * len(tags)}'.format(*tags).removesuffix(' AND')
-                blogs = db.select(TABLES.get('blog'), ('unique_id', 'title'), where=where_clause)
-                log.debug(3)
+                blogs = db.select(TABLES['blog'], ('unique_id', 'title'), where=where_clause)
                 blogs = tuple(map(lambda b: (f'{b[0]}_{b[1]}', b[1]), blogs))
+                db.close()
                 return render_template('explore.html', blogs=blogs)
             
-            except TypeError: 
-                return error('No Blog Found', 'No blog was found.', '/explore')
-            
-            finally: 
+            except TypeError:
                 db.close()
+                return error('No Blog Found', 'No blog was found.', '/explore')
         
         else:
             # get random blogs
             db = DB(DB_PATH)
-            db_res = db.select(TABLES.get('blog'), ('unique_id', 'title'))
-
+            db_res = db.select(TABLES['blog'], ('unique_id', 'title'))
             if db_res is not None: blogs = choices(db_res, k=5)
             else: blogs = (('noblock', 'noblock'),)
-            
             blogs = tuple(map(lambda b: (f'{b[0]}_{b[1]}', b[1]), blogs)) # get blog names for url
             db.close()
             return render_template('explore.html', blogs=blogs)
-    else:
+    else: 
         return error('Invalid Method', 'The used http message isn\'t allowed.', '/explore')
 
 
-@app.route('/write', methods=('GET', 'POST'))
-def write() -> str:
-    """Write page."""
+@app.route('/blog/<route>', methods=('GET', 'POST'))
+def blog(route) -> str:
+    """Blog paths."""
     if request.method == 'GET':
-        return render_template('write.html')
+        if route == 'write': 
+            return render_template('write.html', title='', tags='', blog='')
+        
+        elif route == 'edit':
+            try:
+                blog_id = request.args.get('id')
+                unique_id = blog_id.split('_')[0]
+                title = blog_id.split('_', 1)[1]
+            except: return error('Couldn\'t load Blog', 'An error occured by loading the blog data.', '/')
+            
+            db = DB(DB_PATH)
+            tags = db.select(TABLES['blog'], 'tags', f'WHERE unique_id="{unique_id}" AND title="{title}"')[0][0]
+            db.close()
+            
+            try: blog = load_blog_plain(blog_id)
+            except InvalidBlogIDError: return error('Blog not found', 'The requested blog wasn\'t found.', '/')
+            finally: return render_template('write.html', title=title, tags=tags, blog=blog)
+        
+        elif route == 'delete':
+            try:
+                blog_id = request.args.get('id')
+                try: unique_id = get_session_data(request.cookies.get('session'), 'unique_id')[0]
+                except NoSessionError: return error('No Session', 'You have to be logged in to perform blog actions.', '/')
+                
+                if blog_id.split('_')[0] == unique_id:
+                    if all((delete_blog_entry(blog_id), delete_blog_post(blog_id))): return success('Blog Deleted', 'The blog was deleted successfully', '/explore')
+                    else: return error('Blog not Deleted', 'The blog couldn\'t be deleted.', '/')
+                else: return error('Action Not Permitted', 'The action is not permitted.', '/')
+            
+            except Exception as e:
+                log.error(f'Major Error: {e.__str__()}')
+                return error('Major Error', 'An unexpected error occured, please contact the Admin.', '/')
+
     
     elif request.method == 'POST':
-        try: 
-            unique_id, username = get_session_data(request.cookies.get('session'), ('unique_id', 'username'))
-            title = request.form.get('title')
-            tags = request.form.get('tags')
-            blog = request.form.get('blog')
-            log.debug(f'user posted blog: {unique_id} - {title}')
-            
-            # save that stuff
-            if save_blog_post(unique_id, title, blog):
-                save_blog_entry(unique_id, username, title, tags)
-                return success('Post Blog', 'Your blog was posted successfully', '/explore')
-            else: return error('Blog Exists', 'You already have a blog with the same name.', '/write')
+        if route == 'write' or 'edit':
+            try: 
+                unique_id, username = get_session_data(request.cookies.get('session'), ('unique_id', 'username'))
+                title = request.form.get('title')
+                tags = request.form.get('tags')
+                blog = request.form.get('blog')
+                log.debug(f'user posted blog: {unique_id} - {title}')
+                
+                # save that stuff
+                if route == 'edit':
+                    try:
+                        blog_id = request.args.get('id')
+                        log.debug(f'Blog file deleted: {delete_blog_post(blog_id)}')
+                        log.debug(f'Blog entry deleted: {delete_blog_entry(blog_id)}')
+                    except: pass
 
-        except NoSessionError:
-            return error('No Session', 'You have to be logged in to update your profile.', '/write')
-    else:
-        return error('Invalid Method', 'The used http message isn\'t allowed.', '/write')
+                if save_blog_post(unique_id, title, blog, overwrite=True if route == 'edit' else False):
+                    save_blog_entry(unique_id, username, title, tags)
+                    return success('Post Blog', 'Your blog was posted successfully', '/explore')
+                else: return error('Blog Exists', 'You already have a blog with the same name.', '/blog')
+
+            except NoSessionError:
+                return error('No Session', 'You have to be logged in to update your profile.', '/blog/write')
+    else: 
+        return error('Invalid Method', 'The used http message isn\'t allowed.', '/blog')
 
 
 @app.route('/navbar', methods=('GET',))

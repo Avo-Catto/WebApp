@@ -47,14 +47,14 @@ def save_profile_img(uid:str, img:FileStorage) -> None:
     else: raise TypeError('type of image isn\'t supported')
 
 
-def save_blog_post(uid:str, title:str, blog:str) -> bool:
+def save_blog_post(uid:str, title:str, blog:str, overwrite=False) -> bool:
     """
     Save blog in file. 
-    Return True if successful and False if blog already exists.
+    Returns True if successful and False if blog already exists.
     """
     path = f'static/blogs/{uid}_{title}.md'
     log.debug(f'save blog post: {path}')
-    if not exists(path):
+    if not exists(path) or overwrite:
         with open(path, 'w') as f:
             f.write(blog)
         log.info(f'saved blog sucessfully: {path}')
@@ -72,14 +72,53 @@ def save_blog_entry(uid:str, username:str, title:str, tags:str) -> None:
         'unique_id': uid,
         'username': username,
         'title': title,
-        'tags': tags
+        'tags': tags,
     })
     db.close()
 
 
-def load_blog(blog_id:str) -> str:
-    """Load blog, raise InvalidBlogIDError if blog doesn't exist."""
+def load_blog_html(blog_id:str) -> str:
+    """Load blog in html format, raise InvalidBlogIDError if blog doesn't exist."""
     if exists(f'static/blogs/{blog_id}.md'):
         with open(f'static/blogs/{blog_id}.md', 'r') as f:
             return markdown(f.read(), output_format='html')
     else: raise InvalidBlogIDError
+
+
+def load_blog_plain(blog_id:str) -> str:
+    """Load blog in plain text, raise InvalidBlogIDError if blog doesn't exist."""
+    if exists(f'static/blogs/{blog_id}.md'):
+        with open(f'static/blogs/{blog_id}.md', 'r') as f:
+            text = f.read().replace('\n\n\n', '\n')
+        return text
+    else: raise InvalidBlogIDError
+
+
+def delete_blog_post(blog_id:str) -> bool:
+    """
+    Deletes file of blog.
+    Returns True if successful and False if not.
+    """
+    try: 
+        log.warning(blog_id)
+        remove(f'static/blogs/{blog_id}.md')
+        return True
+    except Exception as e:
+        log.error(e.__str__())
+        return False
+
+
+def delete_blog_entry(blog_id:str) -> bool:
+    """
+    Delete blog entry in db.
+    Returns True if successful and False if not.
+    """
+    try:
+        blog = blog_id.split('_', 1)
+        db = DB(DB_PATH)
+        db.delete(TABLES['blog'], f'WHERE unique_id="{blog[0]}" AND title="{blog[1]}"')
+        db.close()
+        return True
+    except (TypeError, IndexError): 
+        db.close()
+        return False
