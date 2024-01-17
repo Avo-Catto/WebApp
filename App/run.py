@@ -29,8 +29,8 @@ def run() -> None:
             SECRET_KEY=CONFIG.get('secret_key').encode()
         )
 
-        # start session cleanup background process
-        log.info('starting session cleanup proc')
+        # start session cleanup thread
+        log.debug('starting session cleanup thread')
         session_clean_proc = Process(target=session_cleanup, args=(CONFIG.get('vars')['session_cleanup'], ))
         session_clean_proc.start()
 
@@ -40,7 +40,6 @@ def run() -> None:
             host=CONFIG.get('run')['address'], 
             port=CONFIG.get('run')['port'], 
             debug=args['debug'],
-            # ssl_context='adhoc' # only in development environment
         )
     
     except Exception as e:
@@ -173,7 +172,7 @@ def setup() -> None:
             f.write('# Empty Blog\n\nYou will see this if no block is registered in the database.')
 
     # info
-    log.info('Setup successful, you can change configs in config.json')
+    log.info('setup successful, you can edit the configs in config.json')
 
 
 def sql() -> None:
@@ -199,13 +198,13 @@ def sql() -> None:
 if __name__ == '__main__':
     parser = ArgumentParser(
         usage='python3 run.py [options]',
-        epilog='You have to navigate into the WebApp/App directory and execute run.py to run the application.'
+        epilog='Further configurations can be done by editing the config.json file.',
     )
     parser.add_argument('--run',        action='store_true', default=False, help='run application')
-    parser.add_argument('--cleanup',    action='store_true', default=False, help='clean up everything for a clean and fresh new setup (no functionality)')
-    parser.add_argument('--setup',      action='store_true', default=False, help='setup db automatically')
-    parser.add_argument('--sql',        action='store_true', default=False, help='start interactive interface for db (no functionality)')
-    parser.add_argument('--debug',      action='store_true', default=False, help='activate flask debugging mode')
+    parser.add_argument('--cleanup',    action='store_true', default=False, help='clean up everything for a clean and fresh new setup')
+    parser.add_argument('--setup',      action='store_true', default=False, help='setup db and configs')
+    parser.add_argument('--sql',        action='store_true', default=False, help='start interactive interface for db')
+    parser.add_argument('--debug',      action='store_true', default=False, help='activate debugging')
     args = vars(parser.parse_args()) # parse args and convert to dict
 
     # update logging config

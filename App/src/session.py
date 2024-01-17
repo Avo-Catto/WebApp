@@ -47,7 +47,7 @@ def remove_session(session_id:str) -> None:
     finally: db.close()
 
 
-def get_session_data(session_id:str, data:str|tuple|list) -> tuple:
+def get_session_data(session_id:str, data:str|tuple) -> tuple:
     """Return requested data of session or raise NoSessionError if session doesn't exist."""
     db = DB(DB_PATH)
     data = (data, ) if type(data) == str else data # handle string type
